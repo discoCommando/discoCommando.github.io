@@ -1,0 +1,5 @@
+Stajenny,0
+Ulson,0
+Byrtlong,1
+Michson,1
+Tomek,1
