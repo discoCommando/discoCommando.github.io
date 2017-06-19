@@ -6808,6 +6808,143 @@ var _elm_lang$core$Json_Decode$bool = _elm_lang$core$Native_Json.decodePrimitive
 var _elm_lang$core$Json_Decode$string = _elm_lang$core$Native_Json.decodePrimitive('string');
 var _elm_lang$core$Json_Decode$Decoder = {ctor: 'Decoder'};
 
+//import Maybe, Native.List //
+
+var _elm_lang$core$Native_Regex = function() {
+
+function escape(str)
+{
+	return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+}
+function caseInsensitive(re)
+{
+	return new RegExp(re.source, 'gi');
+}
+function regex(raw)
+{
+	return new RegExp(raw, 'g');
+}
+
+function contains(re, string)
+{
+	return string.match(re) !== null;
+}
+
+function find(n, re, str)
+{
+	n = n.ctor === 'All' ? Infinity : n._0;
+	var out = [];
+	var number = 0;
+	var string = str;
+	var lastIndex = re.lastIndex;
+	var prevLastIndex = -1;
+	var result;
+	while (number++ < n && (result = re.exec(string)))
+	{
+		if (prevLastIndex === re.lastIndex) break;
+		var i = result.length - 1;
+		var subs = new Array(i);
+		while (i > 0)
+		{
+			var submatch = result[i];
+			subs[--i] = submatch === undefined
+				? _elm_lang$core$Maybe$Nothing
+				: _elm_lang$core$Maybe$Just(submatch);
+		}
+		out.push({
+			match: result[0],
+			submatches: _elm_lang$core$Native_List.fromArray(subs),
+			index: result.index,
+			number: number
+		});
+		prevLastIndex = re.lastIndex;
+	}
+	re.lastIndex = lastIndex;
+	return _elm_lang$core$Native_List.fromArray(out);
+}
+
+function replace(n, re, replacer, string)
+{
+	n = n.ctor === 'All' ? Infinity : n._0;
+	var count = 0;
+	function jsReplacer(match)
+	{
+		if (count++ >= n)
+		{
+			return match;
+		}
+		var i = arguments.length - 3;
+		var submatches = new Array(i);
+		while (i > 0)
+		{
+			var submatch = arguments[i];
+			submatches[--i] = submatch === undefined
+				? _elm_lang$core$Maybe$Nothing
+				: _elm_lang$core$Maybe$Just(submatch);
+		}
+		return replacer({
+			match: match,
+			submatches: _elm_lang$core$Native_List.fromArray(submatches),
+			index: arguments[arguments.length - 2],
+			number: count
+		});
+	}
+	return string.replace(re, jsReplacer);
+}
+
+function split(n, re, str)
+{
+	n = n.ctor === 'All' ? Infinity : n._0;
+	if (n === Infinity)
+	{
+		return _elm_lang$core$Native_List.fromArray(str.split(re));
+	}
+	var string = str;
+	var result;
+	var out = [];
+	var start = re.lastIndex;
+	var restoreLastIndex = re.lastIndex;
+	while (n--)
+	{
+		if (!(result = re.exec(string))) break;
+		out.push(string.slice(start, result.index));
+		start = re.lastIndex;
+	}
+	out.push(string.slice(start));
+	re.lastIndex = restoreLastIndex;
+	return _elm_lang$core$Native_List.fromArray(out);
+}
+
+return {
+	regex: regex,
+	caseInsensitive: caseInsensitive,
+	escape: escape,
+
+	contains: F2(contains),
+	find: F3(find),
+	replace: F4(replace),
+	split: F3(split)
+};
+
+}();
+
+var _elm_lang$core$Regex$split = _elm_lang$core$Native_Regex.split;
+var _elm_lang$core$Regex$replace = _elm_lang$core$Native_Regex.replace;
+var _elm_lang$core$Regex$find = _elm_lang$core$Native_Regex.find;
+var _elm_lang$core$Regex$contains = _elm_lang$core$Native_Regex.contains;
+var _elm_lang$core$Regex$caseInsensitive = _elm_lang$core$Native_Regex.caseInsensitive;
+var _elm_lang$core$Regex$regex = _elm_lang$core$Native_Regex.regex;
+var _elm_lang$core$Regex$escape = _elm_lang$core$Native_Regex.escape;
+var _elm_lang$core$Regex$Match = F4(
+	function (a, b, c, d) {
+		return {match: a, submatches: b, index: c, number: d};
+	});
+var _elm_lang$core$Regex$Regex = {ctor: 'Regex'};
+var _elm_lang$core$Regex$AtMost = function (a) {
+	return {ctor: 'AtMost', _0: a};
+};
+var _elm_lang$core$Regex$All = {ctor: 'All'};
+
 var _elm_lang$dom$Native_Dom = function() {
 
 var fakeNode = {
@@ -7031,6 +7168,26 @@ var _elm_lang$elm_architecture_tutorial$Types$alreadyPassed = F2(
 						})),
 				A2(_elm_lang$elm_architecture_tutorial$Types$zip, accents, passedWithZeros)));
 	});
+var _elm_lang$elm_architecture_tutorial$Types$encodeYoutubeInfo = function (ytinfo) {
+	return _elm_lang$core$Json_Encode$object(
+		{
+			ctor: '::',
+			_0: {
+				ctor: '_Tuple2',
+				_0: 'id',
+				_1: _elm_lang$core$Json_Encode$string(ytinfo.id)
+			},
+			_1: {
+				ctor: '::',
+				_0: {
+					ctor: '_Tuple2',
+					_0: 'startFrom',
+					_1: _elm_lang$core$Json_Encode$float(ytinfo.startFrom)
+				},
+				_1: {ctor: '[]'}
+			}
+		});
+};
 var _elm_lang$elm_architecture_tutorial$Types$maybeEncode = F2(
 	function (encoder, a) {
 		var _p1 = a;
@@ -7093,7 +7250,15 @@ var _elm_lang$elm_architecture_tutorial$Types$encodeSong = function (record) {
 						_1: _elm_lang$core$Json_Encode$list(
 							A2(_elm_lang$core$List$map, _elm_lang$elm_architecture_tutorial$Types$encodeBlock, record.blocks))
 					},
-					_1: {ctor: '[]'}
+					_1: {
+						ctor: '::',
+						_0: {
+							ctor: '_Tuple2',
+							_0: 'blocks',
+							_1: A2(_elm_lang$elm_architecture_tutorial$Types$maybeEncode, _elm_lang$elm_architecture_tutorial$Types$encodeYoutubeInfo, record.youtube)
+						},
+						_1: {ctor: '[]'}
+					}
 				}
 			}
 		});
@@ -7110,23 +7275,32 @@ var _elm_lang$elm_architecture_tutorial$Types$decodeBlock = A4(
 		_elm_lang$core$Json_Decode$field,
 		'accents',
 		_elm_lang$core$Json_Decode$list(_elm_lang$core$Json_Decode$int)),
-	A2(
-		_elm_lang$core$Json_Decode$field,
-		'maybeCount',
-		_elm_lang$core$Json_Decode$maybe(_elm_lang$core$Json_Decode$int)));
-var _elm_lang$elm_architecture_tutorial$Types$Song = F3(
-	function (a, b, c) {
-		return {track: a, artist: b, blocks: c};
+	_elm_lang$core$Json_Decode$maybe(
+		A2(_elm_lang$core$Json_Decode$field, 'maybeCount', _elm_lang$core$Json_Decode$int)));
+var _elm_lang$elm_architecture_tutorial$Types$YoutubeInfo = F2(
+	function (a, b) {
+		return {id: a, startFrom: b};
 	});
-var _elm_lang$elm_architecture_tutorial$Types$decodeSong = A4(
-	_elm_lang$core$Json_Decode$map3,
+var _elm_lang$elm_architecture_tutorial$Types$decodeYoutubeInfo = A3(
+	_elm_lang$core$Json_Decode$map2,
+	_elm_lang$elm_architecture_tutorial$Types$YoutubeInfo,
+	A2(_elm_lang$core$Json_Decode$field, 'id', _elm_lang$core$Json_Decode$string),
+	A2(_elm_lang$core$Json_Decode$field, 'startFrom', _elm_lang$core$Json_Decode$float));
+var _elm_lang$elm_architecture_tutorial$Types$Song = F4(
+	function (a, b, c, d) {
+		return {track: a, artist: b, blocks: c, youtube: d};
+	});
+var _elm_lang$elm_architecture_tutorial$Types$decodeSong = A5(
+	_elm_lang$core$Json_Decode$map4,
 	_elm_lang$elm_architecture_tutorial$Types$Song,
 	A2(_elm_lang$core$Json_Decode$field, 'track', _elm_lang$core$Json_Decode$string),
 	A2(_elm_lang$core$Json_Decode$field, 'artist', _elm_lang$core$Json_Decode$string),
 	A2(
 		_elm_lang$core$Json_Decode$field,
 		'blocks',
-		_elm_lang$core$Json_Decode$list(_elm_lang$elm_architecture_tutorial$Types$decodeBlock)));
+		_elm_lang$core$Json_Decode$list(_elm_lang$elm_architecture_tutorial$Types$decodeBlock)),
+	_elm_lang$core$Json_Decode$maybe(
+		A2(_elm_lang$core$Json_Decode$field, 'youtube', _elm_lang$elm_architecture_tutorial$Types$decodeYoutubeInfo)));
 
 var _elm_lang$virtual_dom$VirtualDom_Debug$wrap;
 var _elm_lang$virtual_dom$VirtualDom_Debug$wrapWithFlags;
@@ -16086,13 +16260,29 @@ var _elm_lang$elm_architecture_tutorial$ViewBlock$view = function (model) {
 var _elm_lang$elm_architecture_tutorial$ViewBlock$main = _elm_lang$html$Html$program(
 	{init: _elm_lang$elm_architecture_tutorial$ViewBlock$init, view: _elm_lang$elm_architecture_tutorial$ViewBlock$view, update: _elm_lang$elm_architecture_tutorial$ViewBlock$update, subscriptions: _elm_lang$elm_architecture_tutorial$ViewBlock$subscriptions})();
 
+var _elm_lang$elm_architecture_tutorial$Metronome$blockToTime = function (block) {
+	var _p0 = block.maybeCount;
+	if (_p0.ctor === 'Nothing') {
+		return _elm_lang$core$Maybe$Nothing;
+	} else {
+		return _elm_lang$core$Maybe$Just(
+			A2(
+				F2(
+					function (x, y) {
+						return x * y;
+					}),
+				_elm_lang$core$Time$millisecond,
+				_elm_lang$core$Basics$toFloat(
+					(_p0._0 * _elm_lang$core$List$sum(block.accents)) * 60000)) / _elm_lang$core$Basics$toFloat(block.tempo));
+	}
+};
 var _elm_lang$elm_architecture_tutorial$Metronome$tempoToMs = function (tempo) {
 	return (60000 * _elm_lang$core$Time$millisecond) / _elm_lang$core$Basics$toFloat(tempo);
 };
 var _elm_lang$elm_architecture_tutorial$Metronome$block = function () {
-	var _p0 = A2(_elm_lang$core$Json_Decode$decodeString, _elm_lang$elm_architecture_tutorial$Types$decodeBlock, '\n    {\n      \"tempo\" : 240,\n      \"accents\": [\n      4\n      ],\n      \"maybeCount\" : 5\n    }\n');
-	if (_p0.ctor === 'Ok') {
-		return _p0._0;
+	var _p1 = A2(_elm_lang$core$Json_Decode$decodeString, _elm_lang$elm_architecture_tutorial$Types$decodeBlock, '\n    {\n      \"tempo\" : 240,\n      \"accents\": [\n      4\n      ],\n      \"maybeCount\" : 5\n    }\n');
+	if (_p1.ctor === 'Ok') {
+		return _p1._0;
 	} else {
 		return _elm_lang$core$Native_Utils.crashCase(
 			'Metronome',
@@ -16100,31 +16290,31 @@ var _elm_lang$elm_architecture_tutorial$Metronome$block = function () {
 				start: {line: 423, column: 5},
 				end: {line: 438, column: 26}
 			},
-			_p0)(_p0._0);
+			_p1)(_p1._0);
 	}
 }();
 var _elm_lang$elm_architecture_tutorial$Metronome$wsToViewBlockws = function (ws) {
 	return {maybeCount: ws.maybeCount, actual: ws.actual, highlightCount: ws.highlightCount};
 };
 var _elm_lang$elm_architecture_tutorial$Metronome$stripList = function (list) {
-	var _p2 = list;
-	if (_p2.ctor === '[]') {
+	var _p3 = list;
+	if (_p3.ctor === '[]') {
 		return {ctor: '_Tuple2', _0: true, _1: _elm_lang$core$Maybe$Nothing};
 	} else {
-		if ((_p2._0 === 1) && (_p2._1.ctor === '[]')) {
+		if ((_p3._0 === 1) && (_p3._1.ctor === '[]')) {
 			return {ctor: '_Tuple2', _0: true, _1: _elm_lang$core$Maybe$Nothing};
 		} else {
-			var _p4 = _p2._1;
-			var _p3 = _p2._0;
-			return (_elm_lang$core$Native_Utils.cmp(_p3, 1) < 1) ? {
+			var _p5 = _p3._1;
+			var _p4 = _p3._0;
+			return (_elm_lang$core$Native_Utils.cmp(_p4, 1) < 1) ? {
 				ctor: '_Tuple2',
 				_0: true,
-				_1: _elm_lang$core$Maybe$Just(_p4)
+				_1: _elm_lang$core$Maybe$Just(_p5)
 			} : {
 				ctor: '_Tuple2',
 				_0: false,
 				_1: _elm_lang$core$Maybe$Just(
-					{ctor: '::', _0: _p3 - 1, _1: _p4})
+					{ctor: '::', _0: _p4 - 1, _1: _p5})
 			};
 		}
 	}
@@ -16167,8 +16357,8 @@ var _elm_lang$elm_architecture_tutorial$Metronome$Paused = function (a) {
 	return {ctor: 'Paused', _0: a};
 };
 var _elm_lang$elm_architecture_tutorial$Metronome$makePaused = function (model) {
-	var _p5 = model.status;
-	switch (_p5.ctor) {
+	var _p6 = model.status;
+	switch (_p6.ctor) {
 		case 'Idle':
 			return _elm_lang$core$Native_Utils.update(
 				model,
@@ -16180,7 +16370,7 @@ var _elm_lang$elm_architecture_tutorial$Metronome$makePaused = function (model) 
 			return _elm_lang$core$Native_Utils.update(
 				model,
 				{
-					status: _elm_lang$elm_architecture_tutorial$Metronome$Paused(_p5._0)
+					status: _elm_lang$elm_architecture_tutorial$Metronome$Paused(_p6._0)
 				});
 		case 'Finished':
 			return _elm_lang$core$Native_Utils.update(
@@ -16218,21 +16408,21 @@ var _elm_lang$elm_architecture_tutorial$Metronome$Working = function (a) {
 var _elm_lang$elm_architecture_tutorial$Metronome$update = F2(
 	function (msg, model) {
 		var addToLast = function (list) {
-			var _p6 = list;
-			if (_p6.ctor === '[]') {
+			var _p7 = list;
+			if (_p7.ctor === '[]') {
 				return {ctor: '[]'};
 			} else {
-				if (_p6._1.ctor === '[]') {
+				if (_p7._1.ctor === '[]') {
 					return {
 						ctor: '::',
-						_0: _p6._0 + 1,
+						_0: _p7._0 + 1,
 						_1: {ctor: '[]'}
 					};
 				} else {
 					return {
 						ctor: '::',
-						_0: _p6._0,
-						_1: addToLast(_p6._1)
+						_0: _p7._0,
+						_1: addToLast(_p7._1)
 					};
 				}
 			}
@@ -16251,13 +16441,13 @@ var _elm_lang$elm_architecture_tutorial$Metronome$update = F2(
 		var beepToClick = function (beep) {
 			return beep ? _elm_lang$elm_architecture_tutorial$Metronome$High : _elm_lang$elm_architecture_tutorial$Metronome$Low;
 		};
-		var _p7 = model.status;
-		switch (_p7.ctor) {
+		var _p8 = model.status;
+		switch (_p8.ctor) {
 			case 'Idle':
-				var _p8 = msg;
-				_v5_6:
+				var _p9 = msg;
+				_v6_6:
 				do {
-					switch (_p8.ctor) {
+					switch (_p9.ctor) {
 						case 'Start':
 							var ws = _elm_lang$elm_architecture_tutorial$Metronome$wsFromIdle(model.block);
 							return A2(
@@ -16271,7 +16461,7 @@ var _elm_lang$elm_architecture_tutorial$Metronome$update = F2(
 											status: _elm_lang$elm_architecture_tutorial$Metronome$Working(ws)
 										})));
 						case 'ViewMsg':
-							switch (_p8._0.ctor) {
+							switch (_p9._0.ctor) {
 								case 'Add':
 									var addToBlock = F2(
 										function (block, i) {
@@ -16306,7 +16496,7 @@ var _elm_lang$elm_architecture_tutorial$Metronome$update = F2(
 										_elm_lang$core$Native_Utils.update(
 											model,
 											{
-												block: A2(addToBlock, model.block, _p8._0._0)
+												block: A2(addToBlock, model.block, _p9._0._0)
 											}));
 								case 'Remove':
 									var removeFromBlock = F2(
@@ -16338,10 +16528,10 @@ var _elm_lang$elm_architecture_tutorial$Metronome$update = F2(
 										_elm_lang$core$Native_Utils.update(
 											model,
 											{
-												block: A2(removeFromBlock, model.block, _p8._0._0)
+												block: A2(removeFromBlock, model.block, _p9._0._0)
 											}));
 								case 'ChangeCount':
-									var _p12 = _p8._0._0;
+									var _p13 = _p9._0._0;
 									return A2(
 										_Fresheyeball$elm_return$Return$map,
 										function (m) {
@@ -16351,18 +16541,18 @@ var _elm_lang$elm_architecture_tutorial$Metronome$update = F2(
 												{
 													temps: _elm_lang$core$Native_Utils.update(
 														t,
-														{count: _p12})
+														{count: _p13})
 												});
 										},
 										function () {
-											var _p9 = _elm_lang$core$String$toInt(_p12);
-											if (_p9.ctor === 'Ok') {
-												var _p11 = _p9._0;
-												if (_elm_lang$core$Native_Utils.cmp(_p11, 0) > 0) {
+											var _p10 = _elm_lang$core$String$toInt(_p13);
+											if (_p10.ctor === 'Ok') {
+												var _p12 = _p10._0;
+												if (_elm_lang$core$Native_Utils.cmp(_p12, 0) > 0) {
 													var updateMaybeCount = F2(
 														function (maybeCount, i) {
-															var _p10 = maybeCount;
-															if (_p10.ctor === 'Just') {
+															var _p11 = maybeCount;
+															if (_p11.ctor === 'Just') {
 																return _elm_lang$core$Maybe$Just(i);
 															} else {
 																return _elm_lang$core$Maybe$Nothing;
@@ -16376,7 +16566,7 @@ var _elm_lang$elm_architecture_tutorial$Metronome$update = F2(
 																block: _elm_lang$core$Native_Utils.update(
 																	block,
 																	{
-																		maybeCount: A2(updateMaybeCount, block.maybeCount, _p11)
+																		maybeCount: A2(updateMaybeCount, block.maybeCount, _p12)
 																	})
 															}));
 												} else {
@@ -16388,8 +16578,8 @@ var _elm_lang$elm_architecture_tutorial$Metronome$update = F2(
 										}());
 								case 'ClickCount':
 									var updateMaybeCount = function (maybeCount) {
-										var _p13 = maybeCount;
-										if (_p13.ctor === 'Just') {
+										var _p14 = maybeCount;
+										if (_p14.ctor === 'Just') {
 											return _elm_lang$core$Maybe$Nothing;
 										} else {
 											return _elm_lang$core$Maybe$Just(1);
@@ -16407,7 +16597,7 @@ var _elm_lang$elm_architecture_tutorial$Metronome$update = F2(
 													})
 											}));
 								case 'ChangeTempo':
-									var _p16 = _p8._0._0;
+									var _p17 = _p9._0._0;
 									return A2(
 										_Fresheyeball$elm_return$Return$map,
 										function (m) {
@@ -16417,14 +16607,14 @@ var _elm_lang$elm_architecture_tutorial$Metronome$update = F2(
 												{
 													temps: _elm_lang$core$Native_Utils.update(
 														t,
-														{tempo: _p16})
+														{tempo: _p17})
 												});
 										},
 										function () {
-											var _p14 = _elm_lang$core$String$toInt(_p16);
-											if (_p14.ctor === 'Ok') {
-												var _p15 = _p14._0;
-												if (_elm_lang$core$Native_Utils.cmp(_p15, 0) > 0) {
+											var _p15 = _elm_lang$core$String$toInt(_p17);
+											if (_p15.ctor === 'Ok') {
+												var _p16 = _p15._0;
+												if (_elm_lang$core$Native_Utils.cmp(_p16, 0) > 0) {
 													var block = model.block;
 													return _Fresheyeball$elm_return$Return$singleton(
 														_elm_lang$core$Native_Utils.update(
@@ -16432,7 +16622,7 @@ var _elm_lang$elm_architecture_tutorial$Metronome$update = F2(
 															{
 																block: _elm_lang$core$Native_Utils.update(
 																	block,
-																	{tempo: _p15})
+																	{tempo: _p16})
 															}));
 												} else {
 													return _Fresheyeball$elm_return$Return$singleton(model);
@@ -16442,60 +16632,34 @@ var _elm_lang$elm_architecture_tutorial$Metronome$update = F2(
 											}
 										}());
 								default:
-									break _v5_6;
+									break _v6_6;
 							}
 						default:
-							break _v5_6;
+							break _v6_6;
 					}
 				} while(false);
 				return _Fresheyeball$elm_return$Return$singleton(model);
 			case 'Working':
-				var _p26 = _p7._0;
-				var _p17 = msg;
-				switch (_p17.ctor) {
+				var _p27 = _p8._0;
+				var _p18 = msg;
+				switch (_p18.ctor) {
 					case 'Tick':
-						var _p18 = _p26.maybeCount;
-						if (_p18.ctor === 'Just') {
-							var _p22 = _p18._0;
-							if (_elm_lang$core$Native_Utils.cmp(_p22, 0) < 1) {
+						var _p19 = _p27.maybeCount;
+						if (_p19.ctor === 'Just') {
+							var _p23 = _p19._0;
+							if (_elm_lang$core$Native_Utils.cmp(_p23, 0) < 1) {
 								return _Fresheyeball$elm_return$Return$singleton(
 									_elm_lang$core$Native_Utils.update(
 										model,
 										{status: _elm_lang$elm_architecture_tutorial$Metronome$Finished}));
 							} else {
-								var _p19 = _elm_lang$elm_architecture_tutorial$Metronome$stripList(_p26.accents);
-								if (_p19._1.ctor === 'Nothing') {
-									var _p20 = _p19._0;
-									return _elm_lang$core$Native_Utils.eq(_p22, 1) ? _Fresheyeball$elm_return$Return$singleton(
+								var _p20 = _elm_lang$elm_architecture_tutorial$Metronome$stripList(_p27.accents);
+								if (_p20._1.ctor === 'Nothing') {
+									var _p21 = _p20._0;
+									return _elm_lang$core$Native_Utils.eq(_p23, 1) ? _Fresheyeball$elm_return$Return$singleton(
 										_elm_lang$core$Native_Utils.update(
 											model,
 											{status: _elm_lang$elm_architecture_tutorial$Metronome$Finished})) : A2(
-										_Fresheyeball$elm_return$Return$command,
-										_elm_lang$elm_architecture_tutorial$Metronome$click(
-											_elm_lang$core$Basics$toString(
-												beepToClick(_p20))),
-										_Fresheyeball$elm_return$Return$singleton(
-											_elm_lang$core$Native_Utils.update(
-												model,
-												{
-													status: _elm_lang$elm_architecture_tutorial$Metronome$Working(
-														_elm_lang$core$Native_Utils.update(
-															_p26,
-															{
-																accents: model.block.accents,
-																maybeCount: _elm_lang$core$Maybe$Just(_p22 - 1),
-																actual: {
-																	ctor: '::',
-																	_0: 1,
-																	_1: {ctor: '[]'}
-																},
-																highlightCount: true,
-																lastClick: beepToClick(_p20)
-															}))
-												})));
-								} else {
-									var _p21 = _p19._0;
-									return A2(
 										_Fresheyeball$elm_return$Return$command,
 										_elm_lang$elm_architecture_tutorial$Metronome$click(
 											_elm_lang$core$Basics$toString(
@@ -16506,44 +16670,46 @@ var _elm_lang$elm_architecture_tutorial$Metronome$update = F2(
 												{
 													status: _elm_lang$elm_architecture_tutorial$Metronome$Working(
 														_elm_lang$core$Native_Utils.update(
-															_p26,
+															_p27,
 															{
-																accents: _p19._1._0,
-																actual: A2(updateActual, _p21, _p26.actual),
-																highlightCount: false,
+																accents: model.block.accents,
+																maybeCount: _elm_lang$core$Maybe$Just(_p23 - 1),
+																actual: {
+																	ctor: '::',
+																	_0: 1,
+																	_1: {ctor: '[]'}
+																},
+																highlightCount: true,
 																lastClick: beepToClick(_p21)
+															}))
+												})));
+								} else {
+									var _p22 = _p20._0;
+									return A2(
+										_Fresheyeball$elm_return$Return$command,
+										_elm_lang$elm_architecture_tutorial$Metronome$click(
+											_elm_lang$core$Basics$toString(
+												beepToClick(_p22))),
+										_Fresheyeball$elm_return$Return$singleton(
+											_elm_lang$core$Native_Utils.update(
+												model,
+												{
+													status: _elm_lang$elm_architecture_tutorial$Metronome$Working(
+														_elm_lang$core$Native_Utils.update(
+															_p27,
+															{
+																accents: _p20._1._0,
+																actual: A2(updateActual, _p22, _p27.actual),
+																highlightCount: false,
+																lastClick: beepToClick(_p22)
 															}))
 												})));
 								}
 							}
 						} else {
-							var _p23 = _elm_lang$elm_architecture_tutorial$Metronome$stripList(_p26.accents);
-							if (_p23._1.ctor === 'Nothing') {
-								var _p24 = _p23._0;
-								return A2(
-									_Fresheyeball$elm_return$Return$command,
-									_elm_lang$elm_architecture_tutorial$Metronome$click(
-										_elm_lang$core$Basics$toString(
-											beepToClick(_p24))),
-									_Fresheyeball$elm_return$Return$singleton(
-										_elm_lang$core$Native_Utils.update(
-											model,
-											{
-												status: _elm_lang$elm_architecture_tutorial$Metronome$Working(
-													_elm_lang$core$Native_Utils.update(
-														_p26,
-														{
-															accents: model.block.accents,
-															actual: {
-																ctor: '::',
-																_0: 1,
-																_1: {ctor: '[]'}
-															},
-															lastClick: beepToClick(_p24)
-														}))
-											})));
-							} else {
-								var _p25 = _p23._0;
+							var _p24 = _elm_lang$elm_architecture_tutorial$Metronome$stripList(_p27.accents);
+							if (_p24._1.ctor === 'Nothing') {
+								var _p25 = _p24._0;
 								return A2(
 									_Fresheyeball$elm_return$Return$command,
 									_elm_lang$elm_architecture_tutorial$Metronome$click(
@@ -16555,11 +16721,35 @@ var _elm_lang$elm_architecture_tutorial$Metronome$update = F2(
 											{
 												status: _elm_lang$elm_architecture_tutorial$Metronome$Working(
 													_elm_lang$core$Native_Utils.update(
-														_p26,
+														_p27,
 														{
-															accents: _p23._1._0,
-															actual: A2(updateActual, _p25, _p26.actual),
+															accents: model.block.accents,
+															actual: {
+																ctor: '::',
+																_0: 1,
+																_1: {ctor: '[]'}
+															},
 															lastClick: beepToClick(_p25)
+														}))
+											})));
+							} else {
+								var _p26 = _p24._0;
+								return A2(
+									_Fresheyeball$elm_return$Return$command,
+									_elm_lang$elm_architecture_tutorial$Metronome$click(
+										_elm_lang$core$Basics$toString(
+											beepToClick(_p26))),
+									_Fresheyeball$elm_return$Return$singleton(
+										_elm_lang$core$Native_Utils.update(
+											model,
+											{
+												status: _elm_lang$elm_architecture_tutorial$Metronome$Working(
+													_elm_lang$core$Native_Utils.update(
+														_p27,
+														{
+															accents: _p24._1._0,
+															actual: A2(updateActual, _p26, _p27.actual),
+															lastClick: beepToClick(_p26)
 														}))
 											})));
 							}
@@ -16569,7 +16759,7 @@ var _elm_lang$elm_architecture_tutorial$Metronome$update = F2(
 							_elm_lang$core$Native_Utils.update(
 								model,
 								{
-									status: _elm_lang$elm_architecture_tutorial$Metronome$Paused(_p26)
+									status: _elm_lang$elm_architecture_tutorial$Metronome$Paused(_p27)
 								}));
 					case 'Stop':
 						return _Fresheyeball$elm_return$Return$singleton(
@@ -16580,19 +16770,19 @@ var _elm_lang$elm_architecture_tutorial$Metronome$update = F2(
 						return _Fresheyeball$elm_return$Return$singleton(model);
 				}
 			case 'Paused':
-				var _p28 = _p7._0;
-				var _p27 = msg;
-				switch (_p27.ctor) {
+				var _p29 = _p8._0;
+				var _p28 = msg;
+				switch (_p28.ctor) {
 					case 'Start':
 						return A2(
 							_Fresheyeball$elm_return$Return$command,
 							_elm_lang$elm_architecture_tutorial$Metronome$click(
-								_elm_lang$core$Basics$toString(_p28.lastClick)),
+								_elm_lang$core$Basics$toString(_p29.lastClick)),
 							_Fresheyeball$elm_return$Return$singleton(
 								_elm_lang$core$Native_Utils.update(
 									model,
 									{
-										status: _elm_lang$elm_architecture_tutorial$Metronome$Working(_p28)
+										status: _elm_lang$elm_architecture_tutorial$Metronome$Working(_p29)
 									})));
 					case 'Stop':
 						return _Fresheyeball$elm_return$Return$singleton(
@@ -16603,8 +16793,8 @@ var _elm_lang$elm_architecture_tutorial$Metronome$update = F2(
 						return _Fresheyeball$elm_return$Return$singleton(model);
 				}
 			default:
-				var _p29 = msg;
-				if (_p29.ctor === 'Start') {
+				var _p30 = msg;
+				if (_p30.ctor === 'Start') {
 					var ws = _elm_lang$elm_architecture_tutorial$Metronome$wsFromIdle(model.block);
 					return A2(
 						_Fresheyeball$elm_return$Return$command,
@@ -16629,8 +16819,8 @@ var _elm_lang$elm_architecture_tutorial$Metronome$view = function (model) {
 		_elm_lang$html$Html$map,
 		_elm_lang$elm_architecture_tutorial$Metronome$ViewMsg,
 		function () {
-			var _p30 = model.status;
-			switch (_p30.ctor) {
+			var _p31 = model.status;
+			switch (_p31.ctor) {
 				case 'Idle':
 					return _elm_lang$elm_architecture_tutorial$ViewBlock$view(
 						{status: _elm_lang$elm_architecture_tutorial$ViewBlock$Idle, block: model.block, temps: model.temps});
@@ -16638,7 +16828,7 @@ var _elm_lang$elm_architecture_tutorial$Metronome$view = function (model) {
 					return _elm_lang$elm_architecture_tutorial$ViewBlock$view(
 						{
 							status: _elm_lang$elm_architecture_tutorial$ViewBlock$Working(
-								_elm_lang$elm_architecture_tutorial$Metronome$wsToViewBlockws(_p30._0)),
+								_elm_lang$elm_architecture_tutorial$Metronome$wsToViewBlockws(_p31._0)),
 							block: model.block,
 							temps: model.temps
 						});
@@ -16646,7 +16836,7 @@ var _elm_lang$elm_architecture_tutorial$Metronome$view = function (model) {
 					return _elm_lang$elm_architecture_tutorial$ViewBlock$view(
 						{
 							status: _elm_lang$elm_architecture_tutorial$ViewBlock$Paused(
-								_elm_lang$elm_architecture_tutorial$Metronome$wsToViewBlockws(_p30._0)),
+								_elm_lang$elm_architecture_tutorial$Metronome$wsToViewBlockws(_p31._0)),
 							block: model.block,
 							temps: model.temps
 						});
@@ -16680,8 +16870,8 @@ var _elm_lang$elm_architecture_tutorial$Metronome$viewTest = function (model) {
 						{
 							ctor: '::',
 							_0: function () {
-								var _p31 = model.status;
-								switch (_p31.ctor) {
+								var _p32 = model.status;
+								switch (_p32.ctor) {
 									case 'Idle':
 										return _elm_lang$html$Html_Events$onClick(_elm_lang$elm_architecture_tutorial$Metronome$Start);
 									case 'Working':
@@ -16697,8 +16887,8 @@ var _elm_lang$elm_architecture_tutorial$Metronome$viewTest = function (model) {
 						{
 							ctor: '::',
 							_0: function () {
-								var _p32 = model.status;
-								switch (_p32.ctor) {
+								var _p33 = model.status;
+								switch (_p33.ctor) {
 									case 'Idle':
 										return _elm_lang$html$Html$text('Start');
 									case 'Working':
@@ -16718,8 +16908,8 @@ var _elm_lang$elm_architecture_tutorial$Metronome$viewTest = function (model) {
 							{
 								ctor: '::',
 								_0: function () {
-									var _p33 = model.status;
-									switch (_p33.ctor) {
+									var _p34 = model.status;
+									switch (_p34.ctor) {
 										case 'Idle':
 											return _elm_lang$html$Html_Attributes$disabled(true);
 										case 'Working':
@@ -16756,8 +16946,8 @@ var _elm_lang$elm_architecture_tutorial$Metronome$viewTest = function (model) {
 };
 var _elm_lang$elm_architecture_tutorial$Metronome$Tick = {ctor: 'Tick'};
 var _elm_lang$elm_architecture_tutorial$Metronome$subscriptions = function (model) {
-	var _p34 = model.status;
-	if (_p34.ctor === 'Working') {
+	var _p35 = model.status;
+	if (_p35.ctor === 'Working') {
 		return A2(
 			_elm_lang$core$Time$every,
 			_elm_lang$elm_architecture_tutorial$Metronome$tempoToMs(model.block.tempo),
@@ -16769,43 +16959,440 @@ var _elm_lang$elm_architecture_tutorial$Metronome$subscriptions = function (mode
 var _elm_lang$elm_architecture_tutorial$Metronome$main = _elm_lang$html$Html$program(
 	{init: _elm_lang$elm_architecture_tutorial$Metronome$init, view: _elm_lang$elm_architecture_tutorial$Metronome$viewTest, update: _elm_lang$elm_architecture_tutorial$Metronome$update, subscriptions: _elm_lang$elm_architecture_tutorial$Metronome$subscriptions})();
 
+var _elm_lang$http$Native_Http = function() {
+
+
+// ENCODING AND DECODING
+
+function encodeUri(string)
+{
+	return encodeURIComponent(string);
+}
+
+function decodeUri(string)
+{
+	try
+	{
+		return _elm_lang$core$Maybe$Just(decodeURIComponent(string));
+	}
+	catch(e)
+	{
+		return _elm_lang$core$Maybe$Nothing;
+	}
+}
+
+
+// SEND REQUEST
+
+function toTask(request, maybeProgress)
+{
+	return _elm_lang$core$Native_Scheduler.nativeBinding(function(callback)
+	{
+		var xhr = new XMLHttpRequest();
+
+		configureProgress(xhr, maybeProgress);
+
+		xhr.addEventListener('error', function() {
+			callback(_elm_lang$core$Native_Scheduler.fail({ ctor: 'NetworkError' }));
+		});
+		xhr.addEventListener('timeout', function() {
+			callback(_elm_lang$core$Native_Scheduler.fail({ ctor: 'Timeout' }));
+		});
+		xhr.addEventListener('load', function() {
+			callback(handleResponse(xhr, request.expect.responseToResult));
+		});
+
+		try
+		{
+			xhr.open(request.method, request.url, true);
+		}
+		catch (e)
+		{
+			return callback(_elm_lang$core$Native_Scheduler.fail({ ctor: 'BadUrl', _0: request.url }));
+		}
+
+		configureRequest(xhr, request);
+		send(xhr, request.body);
+
+		return function() { xhr.abort(); };
+	});
+}
+
+function configureProgress(xhr, maybeProgress)
+{
+	if (maybeProgress.ctor === 'Nothing')
+	{
+		return;
+	}
+
+	xhr.addEventListener('progress', function(event) {
+		if (!event.lengthComputable)
+		{
+			return;
+		}
+		_elm_lang$core$Native_Scheduler.rawSpawn(maybeProgress._0({
+			bytes: event.loaded,
+			bytesExpected: event.total
+		}));
+	});
+}
+
+function configureRequest(xhr, request)
+{
+	function setHeader(pair)
+	{
+		xhr.setRequestHeader(pair._0, pair._1);
+	}
+
+	A2(_elm_lang$core$List$map, setHeader, request.headers);
+	xhr.responseType = request.expect.responseType;
+	xhr.withCredentials = request.withCredentials;
+
+	if (request.timeout.ctor === 'Just')
+	{
+		xhr.timeout = request.timeout._0;
+	}
+}
+
+function send(xhr, body)
+{
+	switch (body.ctor)
+	{
+		case 'EmptyBody':
+			xhr.send();
+			return;
+
+		case 'StringBody':
+			xhr.setRequestHeader('Content-Type', body._0);
+			xhr.send(body._1);
+			return;
+
+		case 'FormDataBody':
+			xhr.send(body._0);
+			return;
+	}
+}
+
+
+// RESPONSES
+
+function handleResponse(xhr, responseToResult)
+{
+	var response = toResponse(xhr);
+
+	if (xhr.status < 200 || 300 <= xhr.status)
+	{
+		response.body = xhr.responseText;
+		return _elm_lang$core$Native_Scheduler.fail({
+			ctor: 'BadStatus',
+			_0: response
+		});
+	}
+
+	var result = responseToResult(response);
+
+	if (result.ctor === 'Ok')
+	{
+		return _elm_lang$core$Native_Scheduler.succeed(result._0);
+	}
+	else
+	{
+		response.body = xhr.responseText;
+		return _elm_lang$core$Native_Scheduler.fail({
+			ctor: 'BadPayload',
+			_0: result._0,
+			_1: response
+		});
+	}
+}
+
+function toResponse(xhr)
+{
+	return {
+		status: { code: xhr.status, message: xhr.statusText },
+		headers: parseHeaders(xhr.getAllResponseHeaders()),
+		url: xhr.responseURL,
+		body: xhr.response
+	};
+}
+
+function parseHeaders(rawHeaders)
+{
+	var headers = _elm_lang$core$Dict$empty;
+
+	if (!rawHeaders)
+	{
+		return headers;
+	}
+
+	var headerPairs = rawHeaders.split('\u000d\u000a');
+	for (var i = headerPairs.length; i--; )
+	{
+		var headerPair = headerPairs[i];
+		var index = headerPair.indexOf('\u003a\u0020');
+		if (index > 0)
+		{
+			var key = headerPair.substring(0, index);
+			var value = headerPair.substring(index + 2);
+
+			headers = A3(_elm_lang$core$Dict$update, key, function(oldValue) {
+				if (oldValue.ctor === 'Just')
+				{
+					return _elm_lang$core$Maybe$Just(value + ', ' + oldValue._0);
+				}
+				return _elm_lang$core$Maybe$Just(value);
+			}, headers);
+		}
+	}
+
+	return headers;
+}
+
+
+// EXPECTORS
+
+function expectStringResponse(responseToResult)
+{
+	return {
+		responseType: 'text',
+		responseToResult: responseToResult
+	};
+}
+
+function mapExpect(func, expect)
+{
+	return {
+		responseType: expect.responseType,
+		responseToResult: function(response) {
+			var convertedResponse = expect.responseToResult(response);
+			return A2(_elm_lang$core$Result$map, func, convertedResponse);
+		}
+	};
+}
+
+
+// BODY
+
+function multipart(parts)
+{
+	var formData = new FormData();
+
+	while (parts.ctor !== '[]')
+	{
+		var part = parts._0;
+		formData.append(part._0, part._1);
+		parts = parts._1;
+	}
+
+	return { ctor: 'FormDataBody', _0: formData };
+}
+
+return {
+	toTask: F2(toTask),
+	expectStringResponse: expectStringResponse,
+	mapExpect: F2(mapExpect),
+	multipart: multipart,
+	encodeUri: encodeUri,
+	decodeUri: decodeUri
+};
+
+}();
+
+var _elm_lang$http$Http_Internal$map = F2(
+	function (func, request) {
+		return _elm_lang$core$Native_Utils.update(
+			request,
+			{
+				expect: A2(_elm_lang$http$Native_Http.mapExpect, func, request.expect)
+			});
+	});
+var _elm_lang$http$Http_Internal$RawRequest = F7(
+	function (a, b, c, d, e, f, g) {
+		return {method: a, headers: b, url: c, body: d, expect: e, timeout: f, withCredentials: g};
+	});
+var _elm_lang$http$Http_Internal$Request = function (a) {
+	return {ctor: 'Request', _0: a};
+};
+var _elm_lang$http$Http_Internal$Expect = {ctor: 'Expect'};
+var _elm_lang$http$Http_Internal$FormDataBody = {ctor: 'FormDataBody'};
+var _elm_lang$http$Http_Internal$StringBody = F2(
+	function (a, b) {
+		return {ctor: 'StringBody', _0: a, _1: b};
+	});
+var _elm_lang$http$Http_Internal$EmptyBody = {ctor: 'EmptyBody'};
+var _elm_lang$http$Http_Internal$Header = F2(
+	function (a, b) {
+		return {ctor: 'Header', _0: a, _1: b};
+	});
+
+var _elm_lang$http$Http$decodeUri = _elm_lang$http$Native_Http.decodeUri;
+var _elm_lang$http$Http$encodeUri = _elm_lang$http$Native_Http.encodeUri;
+var _elm_lang$http$Http$expectStringResponse = _elm_lang$http$Native_Http.expectStringResponse;
+var _elm_lang$http$Http$expectJson = function (decoder) {
+	return _elm_lang$http$Http$expectStringResponse(
+		function (response) {
+			return A2(_elm_lang$core$Json_Decode$decodeString, decoder, response.body);
+		});
+};
+var _elm_lang$http$Http$expectString = _elm_lang$http$Http$expectStringResponse(
+	function (response) {
+		return _elm_lang$core$Result$Ok(response.body);
+	});
+var _elm_lang$http$Http$multipartBody = _elm_lang$http$Native_Http.multipart;
+var _elm_lang$http$Http$stringBody = _elm_lang$http$Http_Internal$StringBody;
+var _elm_lang$http$Http$jsonBody = function (value) {
+	return A2(
+		_elm_lang$http$Http_Internal$StringBody,
+		'application/json',
+		A2(_elm_lang$core$Json_Encode$encode, 0, value));
+};
+var _elm_lang$http$Http$emptyBody = _elm_lang$http$Http_Internal$EmptyBody;
+var _elm_lang$http$Http$header = _elm_lang$http$Http_Internal$Header;
+var _elm_lang$http$Http$request = _elm_lang$http$Http_Internal$Request;
+var _elm_lang$http$Http$post = F3(
+	function (url, body, decoder) {
+		return _elm_lang$http$Http$request(
+			{
+				method: 'POST',
+				headers: {ctor: '[]'},
+				url: url,
+				body: body,
+				expect: _elm_lang$http$Http$expectJson(decoder),
+				timeout: _elm_lang$core$Maybe$Nothing,
+				withCredentials: false
+			});
+	});
+var _elm_lang$http$Http$get = F2(
+	function (url, decoder) {
+		return _elm_lang$http$Http$request(
+			{
+				method: 'GET',
+				headers: {ctor: '[]'},
+				url: url,
+				body: _elm_lang$http$Http$emptyBody,
+				expect: _elm_lang$http$Http$expectJson(decoder),
+				timeout: _elm_lang$core$Maybe$Nothing,
+				withCredentials: false
+			});
+	});
+var _elm_lang$http$Http$getString = function (url) {
+	return _elm_lang$http$Http$request(
+		{
+			method: 'GET',
+			headers: {ctor: '[]'},
+			url: url,
+			body: _elm_lang$http$Http$emptyBody,
+			expect: _elm_lang$http$Http$expectString,
+			timeout: _elm_lang$core$Maybe$Nothing,
+			withCredentials: false
+		});
+};
+var _elm_lang$http$Http$toTask = function (_p0) {
+	var _p1 = _p0;
+	return A2(_elm_lang$http$Native_Http.toTask, _p1._0, _elm_lang$core$Maybe$Nothing);
+};
+var _elm_lang$http$Http$send = F2(
+	function (resultToMessage, request) {
+		return A2(
+			_elm_lang$core$Task$attempt,
+			resultToMessage,
+			_elm_lang$http$Http$toTask(request));
+	});
+var _elm_lang$http$Http$Response = F4(
+	function (a, b, c, d) {
+		return {url: a, status: b, headers: c, body: d};
+	});
+var _elm_lang$http$Http$BadPayload = F2(
+	function (a, b) {
+		return {ctor: 'BadPayload', _0: a, _1: b};
+	});
+var _elm_lang$http$Http$BadStatus = function (a) {
+	return {ctor: 'BadStatus', _0: a};
+};
+var _elm_lang$http$Http$NetworkError = {ctor: 'NetworkError'};
+var _elm_lang$http$Http$Timeout = {ctor: 'Timeout'};
+var _elm_lang$http$Http$BadUrl = function (a) {
+	return {ctor: 'BadUrl', _0: a};
+};
+var _elm_lang$http$Http$StringPart = F2(
+	function (a, b) {
+		return {ctor: 'StringPart', _0: a, _1: b};
+	});
+var _elm_lang$http$Http$stringPart = _elm_lang$http$Http$StringPart;
+
+var _elm_lang$elm_architecture_tutorial$Metronomes$getNextTime = F2(
+	function (startingTime, list) {
+		var blockToTimes = A2(
+			_elm_lang$core$List$map,
+			_elm_lang$elm_architecture_tutorial$Metronome$blockToTime,
+			A2(
+				_elm_lang$core$List$map,
+				function (_) {
+					return _.block;
+				},
+				list));
+		var _p0 = A2(_elm_lang$core$List$all, _elm_lang$elm_architecture_tutorial$ViewBlock$isJust, blockToTimes);
+		if (_p0 === true) {
+			return _elm_lang$core$Maybe$Just(
+				A2(
+					F2(
+						function (x, y) {
+							return x + y;
+						}),
+					_elm_lang$core$Time$second * startingTime,
+					_elm_lang$core$List$sum(
+						A2(
+							_elm_lang$core$List$map,
+							function (s) {
+								var _p1 = s;
+								if (_p1.ctor === 'Just') {
+									return _p1._0;
+								} else {
+									return 0;
+								}
+							},
+							blockToTimes))));
+		} else {
+			return _elm_lang$core$Maybe$Nothing;
+		}
+	});
 var _elm_lang$elm_architecture_tutorial$Metronomes$getActualIndex = function (ws) {
 	return _elm_lang$core$List$length(ws.previous);
 };
 var _elm_lang$elm_architecture_tutorial$Metronomes$addAt = F3(
 	function (i, a, list) {
-		var _p0 = list;
-		if (_p0.ctor === '[]') {
+		var _p2 = list;
+		if (_p2.ctor === '[]') {
 			return {
 				ctor: '::',
 				_0: a,
 				_1: {ctor: '[]'}
 			};
 		} else {
-			var _p2 = _p0._1;
-			var _p1 = _p0._0;
+			var _p4 = _p2._1;
+			var _p3 = _p2._0;
 			return (_elm_lang$core$Native_Utils.cmp(i, 0) < 1) ? {
 				ctor: '::',
 				_0: a,
-				_1: {ctor: '::', _0: _p1, _1: _p2}
+				_1: {ctor: '::', _0: _p3, _1: _p4}
 			} : {
 				ctor: '::',
-				_0: _p1,
-				_1: A3(_elm_lang$elm_architecture_tutorial$Metronomes$addAt, i - 1, a, _p2)
+				_0: _p3,
+				_1: A3(_elm_lang$elm_architecture_tutorial$Metronomes$addAt, i - 1, a, _p4)
 			};
 		}
 	});
 var _elm_lang$elm_architecture_tutorial$Metronomes$remove = F2(
 	function (i, list) {
-		var _p3 = list;
-		if (_p3.ctor === '[]') {
+		var _p5 = list;
+		if (_p5.ctor === '[]') {
 			return {ctor: '[]'};
 		} else {
-			var _p4 = _p3._1;
-			return (_elm_lang$core$Native_Utils.cmp(i, 0) < 1) ? _p4 : {
+			var _p6 = _p5._1;
+			return (_elm_lang$core$Native_Utils.cmp(i, 0) < 1) ? _p6 : {
 				ctor: '::',
-				_0: _p3._0,
-				_1: A2(_elm_lang$elm_architecture_tutorial$Metronomes$remove, i - 1, _p4)
+				_0: _p5._0,
+				_1: A2(_elm_lang$elm_architecture_tutorial$Metronomes$remove, i - 1, _p6)
 			};
 		}
 	});
@@ -16813,17 +17400,17 @@ var _elm_lang$elm_architecture_tutorial$Metronomes$at = F2(
 	function (i, list) {
 		at:
 		while (true) {
-			var _p5 = list;
-			if (_p5.ctor === '[]') {
+			var _p7 = list;
+			if (_p7.ctor === '[]') {
 				return _elm_lang$core$Maybe$Nothing;
 			} else {
 				if (_elm_lang$core$Native_Utils.cmp(i, 0) < 1) {
-					return _elm_lang$core$Maybe$Just(_p5._0);
+					return _elm_lang$core$Maybe$Just(_p7._0);
 				} else {
-					var _v3 = i - 1,
-						_v4 = _p5._1;
-					i = _v3;
-					list = _v4;
+					var _v5 = i - 1,
+						_v6 = _p7._1;
+					i = _v5;
+					list = _v6;
 					continue at;
 				}
 			}
@@ -16840,17 +17427,42 @@ var _elm_lang$elm_architecture_tutorial$Metronomes$atWs = F2(
 			(i - 1) - _elm_lang$core$List$length(m.previous),
 			m.next));
 	});
+var _elm_lang$elm_architecture_tutorial$Metronomes$parseYoutubeId = function (url) {
+	var _p8 = A3(
+		_elm_lang$core$Regex$find,
+		_elm_lang$core$Regex$All,
+		_elm_lang$core$Regex$regex('^.*((youtu.be\\/)|(v\\/)|(\\/u\\/\\w\\/)|(embed\\/)|(watch\\?))\\??v?=?([^#\\&\\?]*).*'),
+		url);
+	if (_p8.ctor === '[]') {
+		return _elm_lang$core$Maybe$Nothing;
+	} else {
+		var _p9 = A2(_elm_lang$elm_architecture_tutorial$Metronomes$at, 6, _p8._0.submatches);
+		if (_p9.ctor === 'Nothing') {
+			return _elm_lang$core$Maybe$Nothing;
+		} else {
+			var _p10 = _p9._0;
+			if (_p10.ctor === 'Just') {
+				var _p11 = _p10._0;
+				return _elm_lang$core$Native_Utils.eq(
+					_elm_lang$core$String$length(_p11),
+					11) ? _elm_lang$core$Maybe$Just(_p11) : _elm_lang$core$Maybe$Nothing;
+			} else {
+				return _elm_lang$core$Maybe$Nothing;
+			}
+		}
+	}
+};
 var _elm_lang$elm_architecture_tutorial$Metronomes$insert = F3(
 	function (index, a, list) {
-		var _p6 = list;
-		if (_p6.ctor === '[]') {
+		var _p12 = list;
+		if (_p12.ctor === '[]') {
 			return {ctor: '[]'};
 		} else {
-			var _p7 = _p6._1;
-			return (_elm_lang$core$Native_Utils.cmp(index, 0) < 1) ? {ctor: '::', _0: a, _1: _p7} : {
+			var _p13 = _p12._1;
+			return (_elm_lang$core$Native_Utils.cmp(index, 0) < 1) ? {ctor: '::', _0: a, _1: _p13} : {
 				ctor: '::',
-				_0: _p6._0,
-				_1: A3(_elm_lang$elm_architecture_tutorial$Metronomes$insert, index - 1, a, _p7)
+				_0: _p12._0,
+				_1: A3(_elm_lang$elm_architecture_tutorial$Metronomes$insert, index - 1, a, _p13)
 			};
 		}
 	});
@@ -16876,20 +17488,20 @@ var _elm_lang$elm_architecture_tutorial$Metronomes$insertWs = F3(
 					m.next)
 			}));
 	});
-var _elm_lang$elm_architecture_tutorial$Metronomes$exampleSong = function () {
-	var _p8 = A2(_elm_lang$core$Json_Decode$decodeString, _elm_lang$elm_architecture_tutorial$Types$decodeSong, '\n            {\n            \"track\": \"Song\",\n            \"artist\": \"Test\",\n            \"blocks\": [\n                {\n                  \"tempo\" : 120,\n                  \"accents\": [\n                    2, 3\n                  ],\n                  \"maybeCount\" : 3\n                },\n                {\n                  \"tempo\" : 200,\n                  \"accents\": [\n                    2, 3, 2, 4\n                  ],\n                  \"maybeCount\" : 5\n                }\n            ]\n        }\n');
-	if (_p8.ctor === 'Ok') {
-		return _p8._0;
+var _elm_lang$elm_architecture_tutorial$Metronomes$initialSong = function (v) {
+	var _p14 = A2(_elm_lang$core$Json_Decode$decodeValue, _elm_lang$elm_architecture_tutorial$Types$decodeSong, v);
+	if (_p14.ctor === 'Ok') {
+		return _p14._0;
 	} else {
 		return _elm_lang$core$Native_Utils.crashCase(
 			'Metronomes',
 			{
-				start: {line: 74, column: 5},
-				end: {line: 102, column: 26}
+				start: {line: 118, column: 5},
+				end: {line: 125, column: 26}
 			},
-			_p8)(_p8._0);
+			_p14)(_p14._0);
 	}
-}();
+};
 var _elm_lang$elm_architecture_tutorial$Metronomes$modelToSong = function (model) {
 	return {
 		track: model.track,
@@ -16899,7 +17511,17 @@ var _elm_lang$elm_architecture_tutorial$Metronomes$modelToSong = function (model
 			function (_) {
 				return _.block;
 			},
-			model.metronomes)
+			model.metronomes),
+		youtube: function () {
+			var _p16 = model.youtubeStatus;
+			if (_p16.ctor === 'NotExisting') {
+				return _elm_lang$core$Maybe$Nothing;
+			} else {
+				var _p17 = _p16._0;
+				return _elm_lang$core$Maybe$Just(
+					{id: _p17.youtubeId, startFrom: _p17.startFrom});
+			}
+		}()
 	};
 };
 var _elm_lang$elm_architecture_tutorial$Metronomes$mapBlock = function (block) {
@@ -16909,9 +17531,9 @@ var _elm_lang$elm_architecture_tutorial$Metronomes$mapBlock = function (block) {
 		temps: {
 			tempo: _elm_lang$core$Basics$toString(block.tempo),
 			count: function () {
-				var _p10 = block.maybeCount;
-				if (_p10.ctor === 'Just') {
-					return _elm_lang$core$Basics$toString(_p10._0);
+				var _p18 = block.maybeCount;
+				if (_p18.ctor === 'Just') {
+					return _elm_lang$core$Basics$toString(_p18._0);
 				} else {
 					return '1';
 				}
@@ -16919,28 +17541,124 @@ var _elm_lang$elm_architecture_tutorial$Metronomes$mapBlock = function (block) {
 		}
 	};
 };
+var _elm_lang$elm_architecture_tutorial$Metronomes$youtubePlay = _elm_lang$core$Native_Platform.outgoingPort(
+	'youtubePlay',
+	function (v) {
+		return (v.ctor === 'Nothing') ? null : v._0;
+	});
+var _elm_lang$elm_architecture_tutorial$Metronomes$youtubePause = _elm_lang$core$Native_Platform.outgoingPort(
+	'youtubePause',
+	function (v) {
+		return null;
+	});
+var _elm_lang$elm_architecture_tutorial$Metronomes$youtubeStop = _elm_lang$core$Native_Platform.outgoingPort(
+	'youtubeStop',
+	function (v) {
+		return null;
+	});
+var _elm_lang$elm_architecture_tutorial$Metronomes$youtubePlaying = _elm_lang$core$Native_Platform.incomingPort(
+	'youtubePlaying',
+	_elm_lang$core$Json_Decode$null(
+		{ctor: '_Tuple0'}));
+var _elm_lang$elm_architecture_tutorial$Metronomes$youtubePaused = _elm_lang$core$Native_Platform.incomingPort(
+	'youtubePaused',
+	_elm_lang$core$Json_Decode$null(
+		{ctor: '_Tuple0'}));
+var _elm_lang$elm_architecture_tutorial$Metronomes$youtubeReady = _elm_lang$core$Native_Platform.incomingPort(
+	'youtubeReady',
+	_elm_lang$core$Json_Decode$null(
+		{ctor: '_Tuple0'}));
+var _elm_lang$elm_architecture_tutorial$Metronomes$youtubeCueVideo = _elm_lang$core$Native_Platform.outgoingPort(
+	'youtubeCueVideo',
+	function (v) {
+		return v;
+	});
+var _elm_lang$elm_architecture_tutorial$Metronomes$youtubeShow = _elm_lang$core$Native_Platform.outgoingPort(
+	'youtubeShow',
+	function (v) {
+		return null;
+	});
+var _elm_lang$elm_architecture_tutorial$Metronomes$youtubeHide = _elm_lang$core$Native_Platform.outgoingPort(
+	'youtubeHide',
+	function (v) {
+		return null;
+	});
+var _elm_lang$elm_architecture_tutorial$Metronomes$youtubeSeekTo = _elm_lang$core$Native_Platform.outgoingPort(
+	'youtubeSeekTo',
+	function (v) {
+		return v;
+	});
 var _elm_lang$elm_architecture_tutorial$Metronomes$WorkingState = F4(
 	function (a, b, c, d) {
-		return {paused: a, previous: b, actual: c, next: d};
+		return {workingStatus: a, previous: b, actual: c, next: d};
 	});
-var _elm_lang$elm_architecture_tutorial$Metronomes$Model = F4(
-	function (a, b, c, d) {
-		return {metronomes: a, track: b, artist: c, status: d};
+var _elm_lang$elm_architecture_tutorial$Metronomes$YoutubeState = F5(
+	function (a, b, c, d, e) {
+		return {youtubeId: a, url: b, startFrom: c, startFromString: d, cmdsAfterInit: e};
 	});
+var _elm_lang$elm_architecture_tutorial$Metronomes$Model = F5(
+	function (a, b, c, d, e) {
+		return {metronomes: a, track: b, artist: c, status: d, youtubeStatus: e};
+	});
+var _elm_lang$elm_architecture_tutorial$Metronomes$WaitingForPlay = {ctor: 'WaitingForPlay'};
+var _elm_lang$elm_architecture_tutorial$Metronomes$Paused = {ctor: 'Paused'};
+var _elm_lang$elm_architecture_tutorial$Metronomes$Playing = {ctor: 'Playing'};
 var _elm_lang$elm_architecture_tutorial$Metronomes$Working = function (a) {
 	return {ctor: 'Working', _0: a};
 };
 var _elm_lang$elm_architecture_tutorial$Metronomes$Idle = {ctor: 'Idle'};
+var _elm_lang$elm_architecture_tutorial$Metronomes$Existing = function (a) {
+	return {ctor: 'Existing', _0: a};
+};
+var _elm_lang$elm_architecture_tutorial$Metronomes$NotExisting = {ctor: 'NotExisting'};
 var _elm_lang$elm_architecture_tutorial$Metronomes$songToModel = function (song) {
 	return {
 		status: _elm_lang$elm_architecture_tutorial$Metronomes$Idle,
 		track: song.track,
 		artist: song.artist,
-		metronomes: A2(_elm_lang$core$List$map, _elm_lang$elm_architecture_tutorial$Metronomes$mapBlock, song.blocks)
+		metronomes: A2(_elm_lang$core$List$map, _elm_lang$elm_architecture_tutorial$Metronomes$mapBlock, song.blocks),
+		youtubeStatus: function () {
+			var _p19 = song.youtube;
+			if (_p19.ctor === 'Nothing') {
+				return _elm_lang$elm_architecture_tutorial$Metronomes$NotExisting;
+			} else {
+				var _p20 = _p19._0;
+				return _elm_lang$elm_architecture_tutorial$Metronomes$Existing(
+					{
+						youtubeId: _p20.id,
+						startFrom: _p20.startFrom,
+						startFromString: _elm_lang$core$Basics$toString(_p20.startFrom),
+						url: A2(_elm_lang$core$Basics_ops['++'], 'www.youtube.com/watch?v=', _p20.id),
+						cmdsAfterInit: {
+							ctor: '::',
+							_0: _elm_lang$elm_architecture_tutorial$Metronomes$youtubeShow(
+								{ctor: '_Tuple0'}),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$elm_architecture_tutorial$Metronomes$youtubeCueVideo(_p20.id),
+								_1: {ctor: '[]'}
+							}
+						}
+					});
+			}
+		}()
 	};
 };
-var _elm_lang$elm_architecture_tutorial$Metronomes$init = _Fresheyeball$elm_return$Return$singleton(
-	_elm_lang$elm_architecture_tutorial$Metronomes$songToModel(_elm_lang$elm_architecture_tutorial$Metronomes$exampleSong));
+var _elm_lang$elm_architecture_tutorial$Metronomes$init = function (v) {
+	return _Fresheyeball$elm_return$Return$singleton(
+		_elm_lang$elm_architecture_tutorial$Metronomes$songToModel(
+			_elm_lang$elm_architecture_tutorial$Metronomes$initialSong(v)));
+};
+var _elm_lang$elm_architecture_tutorial$Metronomes$YoutubeReady = {ctor: 'YoutubeReady'};
+var _elm_lang$elm_architecture_tutorial$Metronomes$YoutubeStartFromChange = function (a) {
+	return {ctor: 'YoutubeStartFromChange', _0: a};
+};
+var _elm_lang$elm_architecture_tutorial$Metronomes$YoutubeUrlChange = function (a) {
+	return {ctor: 'YoutubeUrlChange', _0: a};
+};
+var _elm_lang$elm_architecture_tutorial$Metronomes$YoutubeButtonClick = {ctor: 'YoutubeButtonClick'};
+var _elm_lang$elm_architecture_tutorial$Metronomes$YoutubePaused = {ctor: 'YoutubePaused'};
+var _elm_lang$elm_architecture_tutorial$Metronomes$YoutubePlaying = {ctor: 'YoutubePlaying'};
 var _elm_lang$elm_architecture_tutorial$Metronomes$ChangeArtist = function (a) {
 	return {ctor: 'ChangeArtist', _0: a};
 };
@@ -16955,15 +17673,37 @@ var _elm_lang$elm_architecture_tutorial$Metronomes$TickMsg = function (a) {
 	return {ctor: 'TickMsg', _0: a};
 };
 var _elm_lang$elm_architecture_tutorial$Metronomes$subscriptions = function (model) {
-	var _p11 = model.status;
-	if (_p11.ctor === 'Idle') {
-		return _elm_lang$core$Platform_Sub$none;
-	} else {
-		return A2(
-			_elm_lang$core$Platform_Sub$map,
-			_elm_lang$elm_architecture_tutorial$Metronomes$TickMsg,
-			_elm_lang$elm_architecture_tutorial$Metronome$subscriptions(_p11._0.actual));
-	}
+	return _elm_lang$core$Platform_Sub$batch(
+		{
+			ctor: '::',
+			_0: function () {
+				var _p21 = model.status;
+				if (_p21.ctor === 'Idle') {
+					return _elm_lang$core$Platform_Sub$none;
+				} else {
+					return A2(
+						_elm_lang$core$Platform_Sub$map,
+						_elm_lang$elm_architecture_tutorial$Metronomes$TickMsg,
+						_elm_lang$elm_architecture_tutorial$Metronome$subscriptions(_p21._0.actual));
+				}
+			}(),
+			_1: {
+				ctor: '::',
+				_0: _elm_lang$elm_architecture_tutorial$Metronomes$youtubePlaying(
+					_elm_lang$core$Basics$always(_elm_lang$elm_architecture_tutorial$Metronomes$YoutubePlaying)),
+				_1: {
+					ctor: '::',
+					_0: _elm_lang$elm_architecture_tutorial$Metronomes$youtubePaused(
+						_elm_lang$core$Basics$always(_elm_lang$elm_architecture_tutorial$Metronomes$YoutubePaused)),
+					_1: {
+						ctor: '::',
+						_0: _elm_lang$elm_architecture_tutorial$Metronomes$youtubeReady(
+							_elm_lang$core$Basics$always(_elm_lang$elm_architecture_tutorial$Metronomes$YoutubeReady)),
+						_1: {ctor: '[]'}
+					}
+				}
+			}
+		});
 };
 var _elm_lang$elm_architecture_tutorial$Metronomes$Next = {ctor: 'Next'};
 var _elm_lang$elm_architecture_tutorial$Metronomes$Stop = {ctor: 'Stop'};
@@ -16975,26 +17715,84 @@ var _elm_lang$elm_architecture_tutorial$Metronomes$MetronomeMsg = F2(
 	});
 var _elm_lang$elm_architecture_tutorial$Metronomes$update = F2(
 	function (msg, model) {
-		var _p12 = msg;
-		switch (_p12.ctor) {
+		var youtubeReady = function () {
+			var _p22 = model.youtubeStatus;
+			if (_p22.ctor === 'Existing') {
+				return true;
+			} else {
+				return false;
+			}
+		}();
+		var youtubeCmd = function (cmd) {
+			return youtubeReady ? cmd : _elm_lang$core$Platform_Cmd$none;
+		};
+		var _p23 = msg;
+		switch (_p23.ctor) {
 			case 'ChangeTrack':
 				return _Fresheyeball$elm_return$Return$singleton(
 					_elm_lang$core$Native_Utils.update(
 						model,
-						{track: _p12._0}));
+						{track: _p23._0}));
 			case 'ChangeArtist':
 				return _Fresheyeball$elm_return$Return$singleton(
 					_elm_lang$core$Native_Utils.update(
 						model,
-						{artist: _p12._0}));
+						{artist: _p23._0}));
 			default:
-				var _p13 = model.status;
-				if (_p13.ctor === 'Idle') {
-					var _p14 = msg;
-					switch (_p14.ctor) {
+				var _p24 = model.status;
+				if (_p24.ctor === 'Idle') {
+					var _p25 = msg;
+					switch (_p25.ctor) {
 						case 'Start':
-							var _p15 = model.metronomes;
-							if (_p15.ctor === '[]') {
+							var _p26 = model.metronomes;
+							if (_p26.ctor === '[]') {
+								return _Fresheyeball$elm_return$Return$singleton(model);
+							} else {
+								var _p29 = _p26._1;
+								var _p28 = _p26._0;
+								var _p27 = model.youtubeStatus;
+								if (_p27.ctor === 'Existing') {
+									return A3(
+										_elm_lang$core$Basics$flip,
+										_Fresheyeball$elm_return$Return$return,
+										_elm_lang$elm_architecture_tutorial$Metronomes$youtubePlay(
+											_elm_lang$core$Maybe$Just(_p27._0.startFrom)),
+										_elm_lang$core$Native_Utils.update(
+											model,
+											{
+												status: _elm_lang$elm_architecture_tutorial$Metronomes$Working(
+													{
+														workingStatus: _elm_lang$elm_architecture_tutorial$Metronomes$WaitingForPlay,
+														previous: {ctor: '[]'},
+														actual: _p28,
+														next: A2(_elm_lang$core$List$map, _elm_lang$elm_architecture_tutorial$Metronome$makeFinished, _p29)
+													})
+											}));
+								} else {
+									return A2(
+										_Fresheyeball$elm_return$Return$map,
+										function (changedMetronomeModel) {
+											return _elm_lang$core$Native_Utils.update(
+												model,
+												{
+													status: _elm_lang$elm_architecture_tutorial$Metronomes$Working(
+														{
+															workingStatus: _elm_lang$elm_architecture_tutorial$Metronomes$Playing,
+															previous: {ctor: '[]'},
+															actual: changedMetronomeModel,
+															next: A2(_elm_lang$core$List$map, _elm_lang$elm_architecture_tutorial$Metronome$makeFinished, _p29)
+														})
+												});
+										},
+										A2(
+											_Fresheyeball$elm_return$Return$mapCmd,
+											_elm_lang$elm_architecture_tutorial$Metronomes$MetronomeMsg(0),
+											A2(_elm_lang$elm_architecture_tutorial$Metronome$update, _elm_lang$elm_architecture_tutorial$Metronome$Start, _p28)));
+								}
+							}
+						case 'YoutubePlaying':
+							var _p30 = model.metronomes;
+							if (_p30.ctor === '[]') {
 								return _Fresheyeball$elm_return$Return$singleton(model);
 							} else {
 								return A2(
@@ -17005,21 +17803,21 @@ var _elm_lang$elm_architecture_tutorial$Metronomes$update = F2(
 											{
 												status: _elm_lang$elm_architecture_tutorial$Metronomes$Working(
 													{
+														workingStatus: _elm_lang$elm_architecture_tutorial$Metronomes$Playing,
 														previous: {ctor: '[]'},
 														actual: changedMetronomeModel,
-														next: A2(_elm_lang$core$List$map, _elm_lang$elm_architecture_tutorial$Metronome$makeFinished, _p15._1),
-														paused: false
+														next: A2(_elm_lang$core$List$map, _elm_lang$elm_architecture_tutorial$Metronome$makeFinished, _p30._1)
 													})
 											});
 									},
 									A2(
 										_Fresheyeball$elm_return$Return$mapCmd,
 										_elm_lang$elm_architecture_tutorial$Metronomes$MetronomeMsg(0),
-										A2(_elm_lang$elm_architecture_tutorial$Metronome$update, _elm_lang$elm_architecture_tutorial$Metronome$Start, _p15._0)));
+										A2(_elm_lang$elm_architecture_tutorial$Metronome$update, _elm_lang$elm_architecture_tutorial$Metronome$Start, _p30._0)));
 							}
 						case 'Next':
-							var _p16 = model.metronomes;
-							if (_p16.ctor === '[]') {
+							var _p31 = model.metronomes;
+							if (_p31.ctor === '[]') {
 								return _Fresheyeball$elm_return$Return$singleton(model);
 							} else {
 								return A2(
@@ -17037,8 +17835,8 @@ var _elm_lang$elm_architecture_tutorial$Metronomes$update = F2(
 														{
 															previous: {ctor: '[]'},
 															actual: changedMetronomeModel,
-															next: A2(_elm_lang$core$List$map, _elm_lang$elm_architecture_tutorial$Metronome$makeFinished, _p16._1),
-															paused: true
+															next: A2(_elm_lang$core$List$map, _elm_lang$elm_architecture_tutorial$Metronome$makeFinished, _p31._1),
+															workingStatus: _elm_lang$elm_architecture_tutorial$Metronomes$Paused
 														})
 												});
 										},
@@ -17046,38 +17844,38 @@ var _elm_lang$elm_architecture_tutorial$Metronomes$update = F2(
 											_Fresheyeball$elm_return$Return$mapCmd,
 											_elm_lang$elm_architecture_tutorial$Metronomes$MetronomeMsg(0),
 											_Fresheyeball$elm_return$Return$dropCmd(
-												A2(_elm_lang$elm_architecture_tutorial$Metronome$update, _elm_lang$elm_architecture_tutorial$Metronome$Start, _p16._0)))));
+												A2(_elm_lang$elm_architecture_tutorial$Metronome$update, _elm_lang$elm_architecture_tutorial$Metronome$Start, _p31._0)))));
 							}
 						case 'MetronomeMsg':
-							var _p21 = _p14._1;
-							var _p20 = _p14._0;
-							var _p17 = A2(_elm_lang$elm_architecture_tutorial$Metronomes$at, _p20, model.metronomes);
-							if (_p17.ctor === 'Nothing') {
+							var _p36 = _p25._1;
+							var _p35 = _p25._0;
+							var _p32 = A2(_elm_lang$elm_architecture_tutorial$Metronomes$at, _p35, model.metronomes);
+							if (_p32.ctor === 'Nothing') {
 								return _Fresheyeball$elm_return$Return$singleton(model);
 							} else {
-								var _p18 = _p21;
-								if ((_p18.ctor === 'ViewMsg') && (_p18._0.ctor === 'RemoveAll')) {
+								var _p33 = _p36;
+								if ((_p33.ctor === 'ViewMsg') && (_p33._0.ctor === 'RemoveAll')) {
 									return _Fresheyeball$elm_return$Return$singleton(
 										_elm_lang$core$Native_Utils.update(
 											model,
 											{
-												metronomes: A2(_elm_lang$elm_architecture_tutorial$Metronomes$remove, _p20, model.metronomes)
+												metronomes: A2(_elm_lang$elm_architecture_tutorial$Metronomes$remove, _p35, model.metronomes)
 											}));
 								} else {
-									var _p19 = A2(_elm_lang$elm_architecture_tutorial$Metronome$update, _p21, _p17._0);
-									var changedMetronomeModel = _p19._0;
-									var metronomeCmd = _p19._1;
+									var _p34 = A2(_elm_lang$elm_architecture_tutorial$Metronome$update, _p36, _p32._0);
+									var changedMetronomeModel = _p34._0;
+									var metronomeCmd = _p34._1;
 									return A2(
 										_Fresheyeball$elm_return$Return$command,
 										A2(
 											_elm_lang$core$Platform_Cmd$map,
-											_elm_lang$elm_architecture_tutorial$Metronomes$MetronomeMsg(_p20),
+											_elm_lang$elm_architecture_tutorial$Metronomes$MetronomeMsg(_p35),
 											metronomeCmd),
 										_Fresheyeball$elm_return$Return$singleton(
 											_elm_lang$core$Native_Utils.update(
 												model,
 												{
-													metronomes: A3(_elm_lang$elm_architecture_tutorial$Metronomes$insert, _p20, changedMetronomeModel, model.metronomes)
+													metronomes: A3(_elm_lang$elm_architecture_tutorial$Metronomes$insert, _p35, changedMetronomeModel, model.metronomes)
 												})));
 								}
 							}
@@ -17086,153 +17884,240 @@ var _elm_lang$elm_architecture_tutorial$Metronomes$update = F2(
 								_elm_lang$core$Native_Utils.update(
 									model,
 									{
-										metronomes: A3(_elm_lang$elm_architecture_tutorial$Metronomes$addAt, _p14._0, _elm_lang$elm_architecture_tutorial$Metronome$emptyModel, model.metronomes)
+										metronomes: A3(_elm_lang$elm_architecture_tutorial$Metronomes$addAt, _p25._0, _elm_lang$elm_architecture_tutorial$Metronome$emptyModel, model.metronomes)
 									}));
+						case 'YoutubeButtonClick':
+							var _p37 = model.youtubeStatus;
+							if (_p37.ctor === 'NotExisting') {
+								return A2(
+									_Fresheyeball$elm_return$Return$command,
+									_elm_lang$elm_architecture_tutorial$Metronomes$youtubeShow(
+										{ctor: '_Tuple0'}),
+									_Fresheyeball$elm_return$Return$singleton(
+										_elm_lang$core$Native_Utils.update(
+											model,
+											{
+												youtubeStatus: _elm_lang$elm_architecture_tutorial$Metronomes$Existing(
+													A5(
+														_elm_lang$elm_architecture_tutorial$Metronomes$YoutubeState,
+														'',
+														'',
+														0,
+														'0',
+														{ctor: '[]'}))
+											})));
+							} else {
+								return A2(
+									_Fresheyeball$elm_return$Return$command,
+									_elm_lang$elm_architecture_tutorial$Metronomes$youtubeHide(
+										{ctor: '_Tuple0'}),
+									_Fresheyeball$elm_return$Return$singleton(
+										_elm_lang$core$Native_Utils.update(
+											model,
+											{youtubeStatus: _elm_lang$elm_architecture_tutorial$Metronomes$NotExisting})));
+							}
 						default:
-							return _Fresheyeball$elm_return$Return$singleton(model);
+							var _p38 = model.youtubeStatus;
+							if (_p38.ctor === 'NotExisting') {
+								return _Fresheyeball$elm_return$Return$singleton(model);
+							} else {
+								var _p45 = _p38._0;
+								var _p39 = msg;
+								switch (_p39.ctor) {
+									case 'YoutubeUrlChange':
+										var _p41 = _p39._0;
+										return A2(
+											_Fresheyeball$elm_return$Return$map,
+											function (ys) {
+												return _elm_lang$core$Native_Utils.update(
+													model,
+													{
+														youtubeStatus: _elm_lang$elm_architecture_tutorial$Metronomes$Existing(
+															_elm_lang$core$Native_Utils.update(
+																ys,
+																{url: _p41}))
+													});
+											},
+											A2(
+												_Fresheyeball$elm_return$Return$andThen,
+												function (ys) {
+													return _elm_lang$core$Native_Utils.eq(
+														_elm_lang$core$String$length(ys.youtubeId),
+														11) ? A2(
+														_Fresheyeball$elm_return$Return$return,
+														ys,
+														_elm_lang$elm_architecture_tutorial$Metronomes$youtubeCueVideo(ys.youtubeId)) : _Fresheyeball$elm_return$Return$singleton(ys);
+												},
+												function () {
+													var _p40 = _elm_lang$elm_architecture_tutorial$Metronomes$parseYoutubeId(_p41);
+													if (_p40.ctor === 'Nothing') {
+														return _Fresheyeball$elm_return$Return$singleton(_p45);
+													} else {
+														return _Fresheyeball$elm_return$Return$singleton(
+															_elm_lang$core$Native_Utils.update(
+																_p45,
+																{youtubeId: _p40._0}));
+													}
+												}()));
+									case 'YoutubeStartFromChange':
+										var _p44 = _p39._0;
+										return A2(
+											_Fresheyeball$elm_return$Return$map,
+											function (ys) {
+												return _elm_lang$core$Native_Utils.update(
+													model,
+													{
+														youtubeStatus: _elm_lang$elm_architecture_tutorial$Metronomes$Existing(
+															_elm_lang$core$Native_Utils.update(
+																ys,
+																{startFromString: _p44}))
+													});
+											},
+											_Fresheyeball$elm_return$Return$singleton(
+												function () {
+													var _p42 = _elm_lang$core$String$toFloat(_p44);
+													if (_p42.ctor === 'Ok') {
+														var _p43 = _p42._0;
+														return (_elm_lang$core$Native_Utils.cmp(_p43, 0) > -1) ? _elm_lang$core$Native_Utils.update(
+															_p45,
+															{startFrom: _p43}) : _p45;
+													} else {
+														return _p45;
+													}
+												}()));
+									case 'YoutubeReady':
+										return A2(
+											_Fresheyeball$elm_return$Return$command,
+											_elm_lang$core$Platform_Cmd$batch(_p45.cmdsAfterInit),
+											_Fresheyeball$elm_return$Return$singleton(model));
+									default:
+										return _Fresheyeball$elm_return$Return$singleton(model);
+								}
+							}
 					}
 				} else {
-					var _p37 = _p13._0;
-					var _p22 = _p37.paused;
-					if (_p22 === false) {
-						var _p23 = msg;
-						switch (_p23.ctor) {
-							case 'MetronomeMsg':
-								var _p26 = _p23._0;
-								var _p24 = A2(_elm_lang$elm_architecture_tutorial$Metronomes$atWs, _p26, _p37);
-								if (_p24.ctor === 'Nothing') {
-									return _Fresheyeball$elm_return$Return$singleton(model);
-								} else {
-									var _p25 = A2(_elm_lang$elm_architecture_tutorial$Metronome$update, _p23._1, _p24._0);
-									var changedMetronomeModel = _p25._0;
-									var metronomeCmd = _p25._1;
-									return A2(
-										_Fresheyeball$elm_return$Return$command,
-										A2(
-											_elm_lang$core$Platform_Cmd$map,
-											_elm_lang$elm_architecture_tutorial$Metronomes$MetronomeMsg(_p26),
-											metronomeCmd),
-										_Fresheyeball$elm_return$Return$singleton(
-											_elm_lang$core$Native_Utils.update(
-												model,
-												{
-													status: _elm_lang$elm_architecture_tutorial$Metronomes$Working(
-														A3(_elm_lang$elm_architecture_tutorial$Metronomes$insertWs, _p26, changedMetronomeModel, _p37))
-												})));
-								}
-							case 'TickMsg':
-								var _p27 = A2(_elm_lang$elm_architecture_tutorial$Metronome$update, _p23._0, _p37.actual);
-								var changedMetronomeModel = _p27._0;
-								var metronomeCmd = _p27._1;
-								var _p28 = changedMetronomeModel.status;
-								if (_p28.ctor === 'Finished') {
-									var _p29 = _p37.next;
-									if (_p29.ctor === '[]') {
+					var _p67 = _p24._0;
+					var _p46 = _p67.workingStatus;
+					switch (_p46.ctor) {
+						case 'Playing':
+							var _p47 = msg;
+							switch (_p47.ctor) {
+								case 'MetronomeMsg':
+									var _p50 = _p47._0;
+									var _p48 = A2(_elm_lang$elm_architecture_tutorial$Metronomes$atWs, _p50, _p67);
+									if (_p48.ctor === 'Nothing') {
+										return _Fresheyeball$elm_return$Return$singleton(model);
+									} else {
+										var _p49 = A2(_elm_lang$elm_architecture_tutorial$Metronome$update, _p47._1, _p48._0);
+										var changedMetronomeModel = _p49._0;
+										var metronomeCmd = _p49._1;
 										return A2(
 											_Fresheyeball$elm_return$Return$command,
 											A2(
 												_elm_lang$core$Platform_Cmd$map,
-												_elm_lang$elm_architecture_tutorial$Metronomes$MetronomeMsg(
-													_elm_lang$elm_architecture_tutorial$Metronomes$getActualIndex(_p37)),
+												_elm_lang$elm_architecture_tutorial$Metronomes$MetronomeMsg(_p50),
 												metronomeCmd),
 											_Fresheyeball$elm_return$Return$singleton(
 												_elm_lang$core$Native_Utils.update(
 													model,
-													{status: _elm_lang$elm_architecture_tutorial$Metronomes$Idle})));
-									} else {
-										var _p30 = A2(_elm_lang$elm_architecture_tutorial$Metronome$update, _elm_lang$elm_architecture_tutorial$Metronome$Start, _p29._0);
-										var changedX = _p30._0;
-										var xCmd = _p30._1;
-										return A2(
-											_Fresheyeball$elm_return$Return$command,
-											A2(
-												_elm_lang$core$Task$attempt,
-												_elm_lang$core$Basics$always(_elm_lang$elm_architecture_tutorial$Metronomes$Focus),
-												_elm_lang$dom$Dom$focus('actual')),
-											A2(
+													{
+														status: _elm_lang$elm_architecture_tutorial$Metronomes$Working(
+															A3(_elm_lang$elm_architecture_tutorial$Metronomes$insertWs, _p50, changedMetronomeModel, _p67))
+													})));
+									}
+								case 'TickMsg':
+									var _p51 = A2(_elm_lang$elm_architecture_tutorial$Metronome$update, _p47._0, _p67.actual);
+									var changedMetronomeModel = _p51._0;
+									var metronomeCmd = _p51._1;
+									var _p52 = changedMetronomeModel.status;
+									if (_p52.ctor === 'Finished') {
+										var _p53 = _p67.next;
+										if (_p53.ctor === '[]') {
+											return A2(
 												_Fresheyeball$elm_return$Return$command,
-												A2(
-													_elm_lang$core$Platform_Cmd$map,
-													_elm_lang$elm_architecture_tutorial$Metronomes$MetronomeMsg(
-														_elm_lang$elm_architecture_tutorial$Metronomes$getActualIndex(_p37) + 1),
-													xCmd),
+												youtubeCmd(
+													_elm_lang$elm_architecture_tutorial$Metronomes$youtubeStop(
+														{ctor: '_Tuple0'})),
 												A2(
 													_Fresheyeball$elm_return$Return$command,
 													A2(
 														_elm_lang$core$Platform_Cmd$map,
 														_elm_lang$elm_architecture_tutorial$Metronomes$MetronomeMsg(
-															_elm_lang$elm_architecture_tutorial$Metronomes$getActualIndex(_p37)),
+															_elm_lang$elm_architecture_tutorial$Metronomes$getActualIndex(_p67)),
 														metronomeCmd),
 													_Fresheyeball$elm_return$Return$singleton(
 														_elm_lang$core$Native_Utils.update(
 															model,
-															{
-																status: _elm_lang$elm_architecture_tutorial$Metronomes$Working(
-																	{
-																		previous: A2(
-																			_elm_lang$core$Basics_ops['++'],
-																			_p37.previous,
+															{status: _elm_lang$elm_architecture_tutorial$Metronomes$Idle}))));
+										} else {
+											var _p54 = A2(_elm_lang$elm_architecture_tutorial$Metronome$update, _elm_lang$elm_architecture_tutorial$Metronome$Start, _p53._0);
+											var changedX = _p54._0;
+											var xCmd = _p54._1;
+											return A2(
+												_Fresheyeball$elm_return$Return$command,
+												A2(
+													_elm_lang$core$Task$attempt,
+													_elm_lang$core$Basics$always(_elm_lang$elm_architecture_tutorial$Metronomes$Focus),
+													_elm_lang$dom$Dom$focus('actual')),
+												A2(
+													_Fresheyeball$elm_return$Return$command,
+													A2(
+														_elm_lang$core$Platform_Cmd$map,
+														_elm_lang$elm_architecture_tutorial$Metronomes$MetronomeMsg(
+															_elm_lang$elm_architecture_tutorial$Metronomes$getActualIndex(_p67) + 1),
+														xCmd),
+													A2(
+														_Fresheyeball$elm_return$Return$command,
+														A2(
+															_elm_lang$core$Platform_Cmd$map,
+															_elm_lang$elm_architecture_tutorial$Metronomes$MetronomeMsg(
+																_elm_lang$elm_architecture_tutorial$Metronomes$getActualIndex(_p67)),
+															metronomeCmd),
+														_Fresheyeball$elm_return$Return$singleton(
+															_elm_lang$core$Native_Utils.update(
+																model,
+																{
+																	status: _elm_lang$elm_architecture_tutorial$Metronomes$Working(
+																		_elm_lang$core$Native_Utils.update(
+																			_p67,
 																			{
-																				ctor: '::',
-																				_0: changedMetronomeModel,
-																				_1: {ctor: '[]'}
-																			}),
-																		actual: changedX,
-																		next: _p29._1,
-																		paused: false
-																	})
-															})))));
+																				previous: A2(
+																					_elm_lang$core$Basics_ops['++'],
+																					_p67.previous,
+																					{
+																						ctor: '::',
+																						_0: changedMetronomeModel,
+																						_1: {ctor: '[]'}
+																					}),
+																				actual: changedX,
+																				next: _p53._1
+																			}))
+																})))));
+										}
+									} else {
+										return A2(
+											_Fresheyeball$elm_return$Return$command,
+											A2(
+												_elm_lang$core$Platform_Cmd$map,
+												_elm_lang$elm_architecture_tutorial$Metronomes$MetronomeMsg(
+													_elm_lang$elm_architecture_tutorial$Metronomes$getActualIndex(_p67)),
+												metronomeCmd),
+											_Fresheyeball$elm_return$Return$singleton(
+												_elm_lang$core$Native_Utils.update(
+													model,
+													{
+														status: _elm_lang$elm_architecture_tutorial$Metronomes$Working(
+															_elm_lang$core$Native_Utils.update(
+																_p67,
+																{actual: changedMetronomeModel}))
+													})));
 									}
-								} else {
+								case 'Pause':
 									return A2(
 										_Fresheyeball$elm_return$Return$command,
-										A2(
-											_elm_lang$core$Platform_Cmd$map,
-											_elm_lang$elm_architecture_tutorial$Metronomes$MetronomeMsg(
-												_elm_lang$elm_architecture_tutorial$Metronomes$getActualIndex(_p37)),
-											metronomeCmd),
-										_Fresheyeball$elm_return$Return$singleton(
-											_elm_lang$core$Native_Utils.update(
-												model,
-												{
-													status: _elm_lang$elm_architecture_tutorial$Metronomes$Working(
-														_elm_lang$core$Native_Utils.update(
-															_p37,
-															{actual: changedMetronomeModel}))
-												})));
-								}
-							case 'Pause':
-								return A2(
-									_Fresheyeball$elm_return$Return$map,
-									function (metronomeModel) {
-										return _elm_lang$core$Native_Utils.update(
-											model,
-											{
-												status: _elm_lang$elm_architecture_tutorial$Metronomes$Working(
-													_elm_lang$core$Native_Utils.update(
-														_p37,
-														{actual: metronomeModel, paused: true}))
-											});
-									},
-									A2(
-										_Fresheyeball$elm_return$Return$mapCmd,
-										_elm_lang$elm_architecture_tutorial$Metronomes$MetronomeMsg(
-											_elm_lang$elm_architecture_tutorial$Metronomes$getActualIndex(_p37)),
-										A2(_elm_lang$elm_architecture_tutorial$Metronome$update, _elm_lang$elm_architecture_tutorial$Metronome$Pause, _p37.actual)));
-							case 'Next':
-								var _p31 = _p37.next;
-								if (_p31.ctor === '[]') {
-									return _Fresheyeball$elm_return$Return$singleton(
-										_elm_lang$core$Native_Utils.update(
-											model,
-											{status: _elm_lang$elm_architecture_tutorial$Metronomes$Idle}));
-								} else {
-									return A2(
-										_Fresheyeball$elm_return$Return$command,
-										A2(
-											_elm_lang$core$Task$attempt,
-											_elm_lang$core$Basics$always(_elm_lang$elm_architecture_tutorial$Metronomes$Focus),
-											_elm_lang$dom$Dom$focus('actual')),
+										youtubeCmd(
+											_elm_lang$elm_architecture_tutorial$Metronomes$youtubePause(
+												{ctor: '_Tuple0'})),
 										A2(
 											_Fresheyeball$elm_return$Return$map,
 											function (metronomeModel) {
@@ -17241,40 +18126,275 @@ var _elm_lang$elm_architecture_tutorial$Metronomes$update = F2(
 													{
 														status: _elm_lang$elm_architecture_tutorial$Metronomes$Working(
 															_elm_lang$core$Native_Utils.update(
-																_p37,
-																{
-																	previous: A2(
-																		_elm_lang$core$Basics_ops['++'],
-																		_p37.previous,
-																		{
-																			ctor: '::',
-																			_0: _elm_lang$elm_architecture_tutorial$Metronome$makeFinished(_p37.actual),
-																			_1: {ctor: '[]'}
-																		}),
-																	actual: metronomeModel,
-																	next: _p31._1,
-																	paused: false
-																}))
+																_p67,
+																{actual: metronomeModel, workingStatus: _elm_lang$elm_architecture_tutorial$Metronomes$Paused}))
 													});
 											},
 											A2(
 												_Fresheyeball$elm_return$Return$mapCmd,
 												_elm_lang$elm_architecture_tutorial$Metronomes$MetronomeMsg(
-													_elm_lang$elm_architecture_tutorial$Metronomes$getActualIndex(_p37) + 1),
-												A2(_elm_lang$elm_architecture_tutorial$Metronome$update, _elm_lang$elm_architecture_tutorial$Metronome$Start, _p31._0))));
-								}
-							case 'Stop':
-								return _Fresheyeball$elm_return$Return$singleton(
-									_elm_lang$core$Native_Utils.update(
-										model,
-										{status: _elm_lang$elm_architecture_tutorial$Metronomes$Idle}));
-							default:
-								return _Fresheyeball$elm_return$Return$singleton(model);
-						}
-					} else {
-						var _p32 = msg;
-						switch (_p32.ctor) {
-							case 'Start':
+													_elm_lang$elm_architecture_tutorial$Metronomes$getActualIndex(_p67)),
+												A2(_elm_lang$elm_architecture_tutorial$Metronome$update, _elm_lang$elm_architecture_tutorial$Metronome$Pause, _p67.actual))));
+								case 'YoutubePaused':
+									return A2(
+										_Fresheyeball$elm_return$Return$map,
+										function (metronomeModel) {
+											return _elm_lang$core$Native_Utils.update(
+												model,
+												{
+													status: _elm_lang$elm_architecture_tutorial$Metronomes$Working(
+														_elm_lang$core$Native_Utils.update(
+															_p67,
+															{actual: metronomeModel, workingStatus: _elm_lang$elm_architecture_tutorial$Metronomes$Paused}))
+												});
+										},
+										A2(
+											_Fresheyeball$elm_return$Return$mapCmd,
+											_elm_lang$elm_architecture_tutorial$Metronomes$MetronomeMsg(
+												_elm_lang$elm_architecture_tutorial$Metronomes$getActualIndex(_p67)),
+											A2(_elm_lang$elm_architecture_tutorial$Metronome$update, _elm_lang$elm_architecture_tutorial$Metronome$Pause, _p67.actual)));
+								case 'Next':
+									var _p55 = _p67.next;
+									if (_p55.ctor === '[]') {
+										return A2(
+											_Fresheyeball$elm_return$Return$command,
+											youtubeCmd(
+												_elm_lang$elm_architecture_tutorial$Metronomes$youtubeStop(
+													{ctor: '_Tuple0'})),
+											_Fresheyeball$elm_return$Return$singleton(
+												_elm_lang$core$Native_Utils.update(
+													model,
+													{status: _elm_lang$elm_architecture_tutorial$Metronomes$Idle})));
+									} else {
+										return A2(
+											_Fresheyeball$elm_return$Return$map,
+											function (ws) {
+												return _elm_lang$core$Native_Utils.update(
+													model,
+													{
+														status: _elm_lang$elm_architecture_tutorial$Metronomes$Working(ws)
+													});
+											},
+											A2(
+												_Fresheyeball$elm_return$Return$andThen,
+												function (ws) {
+													var _p56 = model.youtubeStatus;
+													if (_p56.ctor === 'NotExisting') {
+														return _Fresheyeball$elm_return$Return$singleton(ws);
+													} else {
+														var _p57 = A2(_elm_lang$elm_architecture_tutorial$Metronomes$getNextTime, _p56._0.startFrom, ws.previous);
+														if (_p57.ctor === 'Just') {
+															return A2(
+																_Fresheyeball$elm_return$Return$return,
+																ws,
+																_elm_lang$elm_architecture_tutorial$Metronomes$youtubeSeekTo(
+																	_elm_lang$core$Time$inSeconds(_p57._0)));
+														} else {
+															return _Fresheyeball$elm_return$Return$singleton(ws);
+														}
+													}
+												},
+												A2(
+													_Fresheyeball$elm_return$Return$command,
+													A2(
+														_elm_lang$core$Task$attempt,
+														_elm_lang$core$Basics$always(_elm_lang$elm_architecture_tutorial$Metronomes$Focus),
+														_elm_lang$dom$Dom$focus('actual')),
+													A2(
+														_Fresheyeball$elm_return$Return$map,
+														function (metronomeModel) {
+															return _elm_lang$core$Native_Utils.update(
+																_p67,
+																{
+																	previous: A2(
+																		_elm_lang$core$Basics_ops['++'],
+																		_p67.previous,
+																		{
+																			ctor: '::',
+																			_0: _elm_lang$elm_architecture_tutorial$Metronome$makeFinished(_p67.actual),
+																			_1: {ctor: '[]'}
+																		}),
+																	actual: metronomeModel,
+																	next: _p55._1
+																});
+														},
+														A2(
+															_Fresheyeball$elm_return$Return$mapCmd,
+															_elm_lang$elm_architecture_tutorial$Metronomes$MetronomeMsg(
+																_elm_lang$elm_architecture_tutorial$Metronomes$getActualIndex(_p67) + 1),
+															A2(_elm_lang$elm_architecture_tutorial$Metronome$update, _elm_lang$elm_architecture_tutorial$Metronome$Start, _p55._0))))));
+									}
+								case 'Stop':
+									return A2(
+										_Fresheyeball$elm_return$Return$command,
+										youtubeCmd(
+											_elm_lang$elm_architecture_tutorial$Metronomes$youtubeStop(
+												{ctor: '_Tuple0'})),
+										_Fresheyeball$elm_return$Return$singleton(
+											_elm_lang$core$Native_Utils.update(
+												model,
+												{status: _elm_lang$elm_architecture_tutorial$Metronomes$Idle})));
+								default:
+									return _Fresheyeball$elm_return$Return$singleton(model);
+							}
+						case 'Paused':
+							var _p58 = msg;
+							switch (_p58.ctor) {
+								case 'Start':
+									var _p59 = model.youtubeStatus;
+									if (_p59.ctor === 'Existing') {
+										return A3(
+											_elm_lang$core$Basics$flip,
+											_Fresheyeball$elm_return$Return$return,
+											_elm_lang$elm_architecture_tutorial$Metronomes$youtubePlay(_elm_lang$core$Maybe$Nothing),
+											_elm_lang$core$Native_Utils.update(
+												model,
+												{
+													status: _elm_lang$elm_architecture_tutorial$Metronomes$Working(
+														_elm_lang$core$Native_Utils.update(
+															_p67,
+															{workingStatus: _elm_lang$elm_architecture_tutorial$Metronomes$WaitingForPlay}))
+												}));
+									} else {
+										return A2(
+											_Fresheyeball$elm_return$Return$map,
+											function (metronomeModel) {
+												return _elm_lang$core$Native_Utils.update(
+													model,
+													{
+														status: _elm_lang$elm_architecture_tutorial$Metronomes$Working(
+															_elm_lang$core$Native_Utils.update(
+																_p67,
+																{actual: metronomeModel, workingStatus: _elm_lang$elm_architecture_tutorial$Metronomes$Playing}))
+													});
+											},
+											A2(
+												_Fresheyeball$elm_return$Return$mapCmd,
+												_elm_lang$elm_architecture_tutorial$Metronomes$MetronomeMsg(
+													_elm_lang$elm_architecture_tutorial$Metronomes$getActualIndex(_p67)),
+												A2(_elm_lang$elm_architecture_tutorial$Metronome$update, _elm_lang$elm_architecture_tutorial$Metronome$Start, _p67.actual)));
+									}
+								case 'YoutubePlaying':
+									return A2(
+										_Fresheyeball$elm_return$Return$map,
+										function (metronomeModel) {
+											return _elm_lang$core$Native_Utils.update(
+												model,
+												{
+													status: _elm_lang$elm_architecture_tutorial$Metronomes$Working(
+														_elm_lang$core$Native_Utils.update(
+															_p67,
+															{actual: metronomeModel, workingStatus: _elm_lang$elm_architecture_tutorial$Metronomes$Playing}))
+												});
+										},
+										A2(
+											_Fresheyeball$elm_return$Return$mapCmd,
+											_elm_lang$elm_architecture_tutorial$Metronomes$MetronomeMsg(
+												_elm_lang$elm_architecture_tutorial$Metronomes$getActualIndex(_p67)),
+											A2(_elm_lang$elm_architecture_tutorial$Metronome$update, _elm_lang$elm_architecture_tutorial$Metronome$Start, _p67.actual)));
+								case 'Stop':
+									return A2(
+										_Fresheyeball$elm_return$Return$command,
+										youtubeCmd(
+											_elm_lang$elm_architecture_tutorial$Metronomes$youtubeStop(
+												{ctor: '_Tuple0'})),
+										_Fresheyeball$elm_return$Return$singleton(
+											_elm_lang$core$Native_Utils.update(
+												model,
+												{status: _elm_lang$elm_architecture_tutorial$Metronomes$Idle})));
+								case 'Next':
+									var _p60 = _p67.next;
+									if (_p60.ctor === '[]') {
+										return A2(
+											_Fresheyeball$elm_return$Return$command,
+											youtubeCmd(
+												_elm_lang$elm_architecture_tutorial$Metronomes$youtubeStop(
+													{ctor: '_Tuple0'})),
+											_Fresheyeball$elm_return$Return$singleton(
+												_elm_lang$core$Native_Utils.update(
+													model,
+													{status: _elm_lang$elm_architecture_tutorial$Metronomes$Idle})));
+									} else {
+										return A2(
+											_Fresheyeball$elm_return$Return$map,
+											function (ws) {
+												return _elm_lang$core$Native_Utils.update(
+													model,
+													{
+														status: _elm_lang$elm_architecture_tutorial$Metronomes$Working(ws)
+													});
+											},
+											A2(
+												_Fresheyeball$elm_return$Return$andThen,
+												function (ws) {
+													var _p61 = model.youtubeStatus;
+													if (_p61.ctor === 'NotExisting') {
+														return _Fresheyeball$elm_return$Return$singleton(ws);
+													} else {
+														var _p62 = A2(_elm_lang$elm_architecture_tutorial$Metronomes$getNextTime, _p61._0.startFrom, ws.previous);
+														if (_p62.ctor === 'Just') {
+															return A2(
+																_Fresheyeball$elm_return$Return$return,
+																ws,
+																_elm_lang$elm_architecture_tutorial$Metronomes$youtubeSeekTo(
+																	_elm_lang$core$Time$inSeconds(_p62._0)));
+														} else {
+															return _Fresheyeball$elm_return$Return$singleton(ws);
+														}
+													}
+												},
+												A2(
+													_Fresheyeball$elm_return$Return$command,
+													A2(
+														_elm_lang$core$Task$attempt,
+														_elm_lang$core$Basics$always(_elm_lang$elm_architecture_tutorial$Metronomes$Focus),
+														_elm_lang$dom$Dom$focus('actual')),
+													_Fresheyeball$elm_return$Return$singleton(
+														_elm_lang$core$Native_Utils.update(
+															_p67,
+															{
+																previous: A2(
+																	_elm_lang$core$Basics_ops['++'],
+																	_p67.previous,
+																	{
+																		ctor: '::',
+																		_0: _elm_lang$elm_architecture_tutorial$Metronome$makeFinished(_p67.actual),
+																		_1: {ctor: '[]'}
+																	}),
+																actual: _elm_lang$elm_architecture_tutorial$Metronome$makePaused(_p60._0),
+																next: _p60._1,
+																workingStatus: _elm_lang$elm_architecture_tutorial$Metronomes$Paused
+															})))));
+									}
+								case 'MetronomeMsg':
+									var _p65 = _p58._0;
+									var _p63 = A2(_elm_lang$elm_architecture_tutorial$Metronomes$atWs, _p65, _p67);
+									if (_p63.ctor === 'Nothing') {
+										return _Fresheyeball$elm_return$Return$singleton(model);
+									} else {
+										var _p64 = A2(_elm_lang$elm_architecture_tutorial$Metronome$update, _p58._1, _p63._0);
+										var changedMetronomeModel = _p64._0;
+										var metronomeCmd = _p64._1;
+										return A2(
+											_Fresheyeball$elm_return$Return$command,
+											A2(
+												_elm_lang$core$Platform_Cmd$map,
+												_elm_lang$elm_architecture_tutorial$Metronomes$MetronomeMsg(_p65),
+												metronomeCmd),
+											_Fresheyeball$elm_return$Return$singleton(
+												_elm_lang$core$Native_Utils.update(
+													model,
+													{
+														status: _elm_lang$elm_architecture_tutorial$Metronomes$Working(
+															A3(_elm_lang$elm_architecture_tutorial$Metronomes$insertWs, _p65, changedMetronomeModel, _p67))
+													})));
+									}
+								default:
+									return _Fresheyeball$elm_return$Return$singleton(model);
+							}
+						default:
+							var _p66 = msg;
+							if (_p66.ctor === 'YoutubePlaying') {
 								return A2(
 									_Fresheyeball$elm_return$Return$map,
 									function (metronomeModel) {
@@ -17283,82 +18403,18 @@ var _elm_lang$elm_architecture_tutorial$Metronomes$update = F2(
 											{
 												status: _elm_lang$elm_architecture_tutorial$Metronomes$Working(
 													_elm_lang$core$Native_Utils.update(
-														_p37,
-														{actual: metronomeModel, paused: false}))
+														_p67,
+														{actual: metronomeModel, workingStatus: _elm_lang$elm_architecture_tutorial$Metronomes$Playing}))
 											});
 									},
 									A2(
 										_Fresheyeball$elm_return$Return$mapCmd,
 										_elm_lang$elm_architecture_tutorial$Metronomes$MetronomeMsg(
-											_elm_lang$elm_architecture_tutorial$Metronomes$getActualIndex(_p37)),
-										A2(_elm_lang$elm_architecture_tutorial$Metronome$update, _elm_lang$elm_architecture_tutorial$Metronome$Start, _p37.actual)));
-							case 'Stop':
-								return _Fresheyeball$elm_return$Return$singleton(
-									_elm_lang$core$Native_Utils.update(
-										model,
-										{status: _elm_lang$elm_architecture_tutorial$Metronomes$Idle}));
-							case 'Next':
-								var _p33 = _p37.next;
-								if (_p33.ctor === '[]') {
-									return _Fresheyeball$elm_return$Return$singleton(
-										_elm_lang$core$Native_Utils.update(
-											model,
-											{status: _elm_lang$elm_architecture_tutorial$Metronomes$Idle}));
-								} else {
-									return A2(
-										_Fresheyeball$elm_return$Return$command,
-										A2(
-											_elm_lang$core$Task$attempt,
-											_elm_lang$core$Basics$always(_elm_lang$elm_architecture_tutorial$Metronomes$Focus),
-											_elm_lang$dom$Dom$focus('actual')),
-										_Fresheyeball$elm_return$Return$singleton(
-											_elm_lang$core$Native_Utils.update(
-												model,
-												{
-													status: _elm_lang$elm_architecture_tutorial$Metronomes$Working(
-														_elm_lang$core$Native_Utils.update(
-															_p37,
-															{
-																previous: A2(
-																	_elm_lang$core$Basics_ops['++'],
-																	_p37.previous,
-																	{
-																		ctor: '::',
-																		_0: _elm_lang$elm_architecture_tutorial$Metronome$makeFinished(_p37.actual),
-																		_1: {ctor: '[]'}
-																	}),
-																actual: _elm_lang$elm_architecture_tutorial$Metronome$makePaused(_p33._0),
-																next: _p33._1,
-																paused: true
-															}))
-												})));
-								}
-							case 'MetronomeMsg':
-								var _p36 = _p32._0;
-								var _p34 = A2(_elm_lang$elm_architecture_tutorial$Metronomes$atWs, _p36, _p37);
-								if (_p34.ctor === 'Nothing') {
-									return _Fresheyeball$elm_return$Return$singleton(model);
-								} else {
-									var _p35 = A2(_elm_lang$elm_architecture_tutorial$Metronome$update, _p32._1, _p34._0);
-									var changedMetronomeModel = _p35._0;
-									var metronomeCmd = _p35._1;
-									return A2(
-										_Fresheyeball$elm_return$Return$command,
-										A2(
-											_elm_lang$core$Platform_Cmd$map,
-											_elm_lang$elm_architecture_tutorial$Metronomes$MetronomeMsg(_p36),
-											metronomeCmd),
-										_Fresheyeball$elm_return$Return$singleton(
-											_elm_lang$core$Native_Utils.update(
-												model,
-												{
-													status: _elm_lang$elm_architecture_tutorial$Metronomes$Working(
-														A3(_elm_lang$elm_architecture_tutorial$Metronomes$insertWs, _p36, changedMetronomeModel, _p37))
-												})));
-								}
-							default:
+											_elm_lang$elm_architecture_tutorial$Metronomes$getActualIndex(_p67)),
+										A2(_elm_lang$elm_architecture_tutorial$Metronome$update, _elm_lang$elm_architecture_tutorial$Metronome$Start, _p67.actual)));
+							} else {
 								return _Fresheyeball$elm_return$Return$singleton(model);
-						}
+							}
 					}
 				}
 		}
@@ -17377,8 +18433,8 @@ var _elm_lang$elm_architecture_tutorial$Metronomes$viewMetronomes = function (mo
 			_1: {ctor: '[]'}
 		},
 		function () {
-			var _p38 = model.status;
-			if (_p38.ctor === 'Idle') {
+			var _p68 = model.status;
+			if (_p68.ctor === 'Idle') {
 				return A2(
 					_elm_lang$core$Basics_ops['++'],
 					_elm_lang$core$List$concat(
@@ -17453,8 +18509,8 @@ var _elm_lang$elm_architecture_tutorial$Metronomes$viewMetronomes = function (mo
 						_1: {ctor: '[]'}
 					});
 			} else {
-				var _p39 = _p38._0;
-				var actualIndex = _elm_lang$elm_architecture_tutorial$Metronomes$getActualIndex(_p39);
+				var _p69 = _p68._0;
+				var actualIndex = _elm_lang$elm_architecture_tutorial$Metronomes$getActualIndex(_p69);
 				return A2(
 					_elm_lang$core$Basics_ops['++'],
 					{
@@ -17475,7 +18531,7 @@ var _elm_lang$elm_architecture_tutorial$Metronomes$viewMetronomes = function (mo
 											_elm_lang$elm_architecture_tutorial$Metronomes$MetronomeMsg(index),
 											_elm_lang$elm_architecture_tutorial$Metronome$view(metronome));
 									}),
-								_p39.previous)),
+								_p69.previous)),
 						_1: {ctor: '[]'}
 					},
 					A2(
@@ -17498,7 +18554,7 @@ var _elm_lang$elm_architecture_tutorial$Metronomes$viewMetronomes = function (mo
 									_0: A2(
 										_elm_lang$html$Html$map,
 										_elm_lang$elm_architecture_tutorial$Metronomes$MetronomeMsg(actualIndex),
-										_elm_lang$elm_architecture_tutorial$Metronome$view(_p39.actual)),
+										_elm_lang$elm_architecture_tutorial$Metronome$view(_p69.actual)),
 									_1: {ctor: '[]'}
 								}),
 							_1: {ctor: '[]'}
@@ -17512,7 +18568,7 @@ var _elm_lang$elm_architecture_tutorial$Metronomes$viewMetronomes = function (mo
 										_elm_lang$elm_architecture_tutorial$Metronomes$MetronomeMsg(index + actualIndex),
 										_elm_lang$elm_architecture_tutorial$Metronome$view(metronome));
 								}),
-							_p39.next)));
+							_p69.next)));
 			}
 		}());
 };
@@ -17543,42 +18599,142 @@ var _elm_lang$elm_architecture_tutorial$Metronomes$view = function (model) {
 						_0: _elm_lang$html$Html_Attributes$class('info'),
 						_1: {ctor: '[]'}
 					},
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html$text('Track'),
-						_1: {
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						{
 							ctor: '::',
-							_0: A2(
-								_elm_lang$html$Html$p,
-								{ctor: '[]'},
-								{ctor: '[]'}),
+							_0: _elm_lang$html$Html$text('Track'),
 							_1: {
 								ctor: '::',
 								_0: A2(
-									_elm_lang$html$Html$input,
-									{
-										ctor: '::',
-										_0: _elm_lang$html$Html_Attributes$type_('text'),
-										_1: {
+									_elm_lang$html$Html$p,
+									{ctor: '[]'},
+									{ctor: '[]'}),
+								_1: {
+									ctor: '::',
+									_0: A2(
+										_elm_lang$html$Html$input,
+										{
 											ctor: '::',
-											_0: _elm_lang$html$Html_Events$onInput(_elm_lang$elm_architecture_tutorial$Metronomes$ChangeTrack),
+											_0: _elm_lang$html$Html_Attributes$type_('text'),
 											_1: {
 												ctor: '::',
-												_0: _elm_lang$html$Html_Attributes$value(model.track),
-												_1: {ctor: '[]'}
+												_0: _elm_lang$html$Html_Events$onInput(_elm_lang$elm_architecture_tutorial$Metronomes$ChangeTrack),
+												_1: {
+													ctor: '::',
+													_0: _elm_lang$html$Html_Attributes$value(model.track),
+													_1: {ctor: '[]'}
+												}
+											}
+										},
+										{ctor: '[]'}),
+									_1: {
+										ctor: '::',
+										_0: A2(
+											_elm_lang$html$Html$p,
+											{ctor: '[]'},
+											{ctor: '[]'}),
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$html$Html$text('Artist'),
+											_1: {
+												ctor: '::',
+												_0: A2(
+													_elm_lang$html$Html$p,
+													{ctor: '[]'},
+													{ctor: '[]'}),
+												_1: {
+													ctor: '::',
+													_0: A2(
+														_elm_lang$html$Html$input,
+														{
+															ctor: '::',
+															_0: _elm_lang$html$Html_Attributes$type_('text'),
+															_1: {
+																ctor: '::',
+																_0: _elm_lang$html$Html_Events$onInput(_elm_lang$elm_architecture_tutorial$Metronomes$ChangeArtist),
+																_1: {
+																	ctor: '::',
+																	_0: _elm_lang$html$Html_Attributes$value(model.artist),
+																	_1: {ctor: '[]'}
+																}
+															}
+														},
+														{ctor: '[]'}),
+													_1: {ctor: '[]'}
+												}
 											}
 										}
-									},
-									{ctor: '[]'}),
+									}
+								}
+							}
+						},
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html$text('YouTube'),
 								_1: {
 									ctor: '::',
 									_0: A2(
 										_elm_lang$html$Html$p,
 										{ctor: '[]'},
 										{ctor: '[]'}),
-									_1: {
+									_1: {ctor: '[]'}
+								}
+							},
+							function () {
+								var isIdle = _elm_lang$core$Native_Utils.eq(model.status, _elm_lang$elm_architecture_tutorial$Metronomes$Idle);
+								var _p70 = model.youtubeStatus;
+								if (_p70.ctor === 'NotExisting') {
+									return {
 										ctor: '::',
-										_0: _elm_lang$html$Html$text('Artist'),
+										_0: A2(
+											_elm_lang$html$Html$button,
+											{
+												ctor: '::',
+												_0: _elm_lang$html$Html_Attributes$class('youtube-button'),
+												_1: {
+													ctor: '::',
+													_0: _elm_lang$html$Html_Events$onClick(_elm_lang$elm_architecture_tutorial$Metronomes$YoutubeButtonClick),
+													_1: {
+														ctor: '::',
+														_0: _elm_lang$html$Html_Attributes$disabled(!isIdle),
+														_1: {ctor: '[]'}
+													}
+												}
+											},
+											{
+												ctor: '::',
+												_0: _elm_lang$html$Html$text('Off'),
+												_1: {ctor: '[]'}
+											}),
+										_1: {ctor: '[]'}
+									};
+								} else {
+									var _p71 = _p70._0;
+									return {
+										ctor: '::',
+										_0: A2(
+											_elm_lang$html$Html$button,
+											{
+												ctor: '::',
+												_0: _elm_lang$html$Html_Attributes$class('youtube-button'),
+												_1: {
+													ctor: '::',
+													_0: _elm_lang$html$Html_Events$onClick(_elm_lang$elm_architecture_tutorial$Metronomes$YoutubeButtonClick),
+													_1: {
+														ctor: '::',
+														_0: _elm_lang$html$Html_Attributes$disabled(!isIdle),
+														_1: {ctor: '[]'}
+													}
+												}
+											},
+											{
+												ctor: '::',
+												_0: _elm_lang$html$Html$text('On'),
+												_1: {ctor: '[]'}
+											}),
 										_1: {
 											ctor: '::',
 											_0: A2(
@@ -17587,30 +18743,102 @@ var _elm_lang$elm_architecture_tutorial$Metronomes$view = function (model) {
 												{ctor: '[]'}),
 											_1: {
 												ctor: '::',
-												_0: A2(
-													_elm_lang$html$Html$input,
-													{
+												_0: _elm_lang$html$Html$text('YouTube Link'),
+												_1: {
+													ctor: '::',
+													_0: A2(
+														_elm_lang$html$Html$p,
+														{ctor: '[]'},
+														{ctor: '[]'}),
+													_1: {
 														ctor: '::',
-														_0: _elm_lang$html$Html_Attributes$type_('text'),
+														_0: A2(
+															_elm_lang$html$Html$input,
+															{
+																ctor: '::',
+																_0: _elm_lang$html$Html_Attributes$type_('text'),
+																_1: {
+																	ctor: '::',
+																	_0: _elm_lang$html$Html_Attributes$value(_p71.url),
+																	_1: {
+																		ctor: '::',
+																		_0: _elm_lang$html$Html_Events$onInput(_elm_lang$elm_architecture_tutorial$Metronomes$YoutubeUrlChange),
+																		_1: {
+																			ctor: '::',
+																			_0: _elm_lang$html$Html_Attributes$disabled(!isIdle),
+																			_1: {ctor: '[]'}
+																		}
+																	}
+																}
+															},
+															{ctor: '[]'}),
 														_1: {
 															ctor: '::',
-															_0: _elm_lang$html$Html_Events$onInput(_elm_lang$elm_architecture_tutorial$Metronomes$ChangeArtist),
+															_0: A2(
+																_elm_lang$html$Html$p,
+																{ctor: '[]'},
+																{ctor: '[]'}),
 															_1: {
 																ctor: '::',
-																_0: _elm_lang$html$Html_Attributes$value(model.artist),
-																_1: {ctor: '[]'}
+																_0: _elm_lang$html$Html$text('Start from (in seconds)'),
+																_1: {
+																	ctor: '::',
+																	_0: A2(
+																		_elm_lang$html$Html$p,
+																		{ctor: '[]'},
+																		{ctor: '[]'}),
+																	_1: {
+																		ctor: '::',
+																		_0: A2(
+																			_elm_lang$html$Html$input,
+																			{
+																				ctor: '::',
+																				_0: _elm_lang$html$Html_Attributes$type_('text'),
+																				_1: {
+																					ctor: '::',
+																					_0: _elm_lang$html$Html_Attributes$value(_p71.startFromString),
+																					_1: {
+																						ctor: '::',
+																						_0: _elm_lang$html$Html_Events$onInput(_elm_lang$elm_architecture_tutorial$Metronomes$YoutubeStartFromChange),
+																						_1: {
+																							ctor: '::',
+																							_0: _elm_lang$html$Html_Attributes$disabled(!isIdle),
+																							_1: {ctor: '[]'}
+																						}
+																					}
+																				}
+																			},
+																			{ctor: '[]'}),
+																		_1: {
+																			ctor: '::',
+																			_0: A2(
+																				_elm_lang$html$Html$p,
+																				{ctor: '[]'},
+																				{ctor: '[]'}),
+																			_1: {
+																				ctor: '::',
+																				_0: A2(
+																					_elm_lang$html$Html$div,
+																					{
+																						ctor: '::',
+																						_0: _elm_lang$html$Html_Attributes$class('player-empty-space'),
+																						_1: {ctor: '[]'}
+																					},
+																					{ctor: '[]'}),
+																				_1: {ctor: '[]'}
+																			}
+																		}
+																	}
+																}
 															}
 														}
-													},
-													{ctor: '[]'}),
-												_1: {ctor: '[]'}
+													}
+												}
 											}
 										}
-									}
+									};
 								}
-							}
-						}
-					}),
+							}()))),
 				_1: {
 					ctor: '::',
 					_0: A2(
@@ -17625,8 +18853,8 @@ var _elm_lang$elm_architecture_tutorial$Metronomes$view = function (model) {
 							_0: A2(
 								_elm_lang$html$Html$button,
 								function () {
-									var _p40 = model.status;
-									if (_p40.ctor === 'Idle') {
+									var _p72 = model.status;
+									if (_p72.ctor === 'Idle') {
 										return {
 											ctor: '::',
 											_0: _elm_lang$html$Html_Events$onClick(_elm_lang$elm_architecture_tutorial$Metronomes$Start),
@@ -17648,36 +18876,31 @@ var _elm_lang$elm_architecture_tutorial$Metronomes$view = function (model) {
 											}
 										};
 									} else {
-										var _p41 = _p40._0.paused;
-										if (_p41 === true) {
-											return {
+										return _elm_lang$core$Native_Utils.eq(_p72._0.workingStatus, _elm_lang$elm_architecture_tutorial$Metronomes$Paused) ? {
+											ctor: '::',
+											_0: _elm_lang$html$Html_Events$onClick(_elm_lang$elm_architecture_tutorial$Metronomes$Start),
+											_1: {
 												ctor: '::',
-												_0: _elm_lang$html$Html_Events$onClick(_elm_lang$elm_architecture_tutorial$Metronomes$Start),
+												_0: _elm_lang$html$Html_Attributes$id('start-button'),
 												_1: {
 													ctor: '::',
-													_0: _elm_lang$html$Html_Attributes$id('start-button'),
-													_1: {
-														ctor: '::',
-														_0: _elm_lang$html$Html_Attributes$class('control-button'),
-														_1: {ctor: '[]'}
-													}
+													_0: _elm_lang$html$Html_Attributes$class('control-button'),
+													_1: {ctor: '[]'}
 												}
-											};
-										} else {
-											return {
+											}
+										} : {
+											ctor: '::',
+											_0: _elm_lang$html$Html_Events$onClick(_elm_lang$elm_architecture_tutorial$Metronomes$Pause),
+											_1: {
 												ctor: '::',
-												_0: _elm_lang$html$Html_Events$onClick(_elm_lang$elm_architecture_tutorial$Metronomes$Pause),
+												_0: _elm_lang$html$Html_Attributes$id('pause-button'),
 												_1: {
 													ctor: '::',
-													_0: _elm_lang$html$Html_Attributes$id('pause-button'),
-													_1: {
-														ctor: '::',
-														_0: _elm_lang$html$Html_Attributes$class('control-button'),
-														_1: {ctor: '[]'}
-													}
+													_0: _elm_lang$html$Html_Attributes$class('control-button'),
+													_1: {ctor: '[]'}
 												}
-											};
-										}
+											}
+										};
 									}
 								}(),
 								{ctor: '[]'}),
@@ -17688,8 +18911,8 @@ var _elm_lang$elm_architecture_tutorial$Metronomes$view = function (model) {
 									{
 										ctor: '::',
 										_0: function () {
-											var _p42 = model.status;
-											if (_p42.ctor === 'Idle') {
+											var _p73 = model.status;
+											if (_p73.ctor === 'Idle') {
 												return _elm_lang$html$Html_Attributes$disabled(true);
 											} else {
 												return _elm_lang$html$Html_Events$onClick(_elm_lang$elm_architecture_tutorial$Metronomes$Stop);
@@ -17778,8 +19001,8 @@ var _elm_lang$elm_architecture_tutorial$Metronomes$view = function (model) {
 			}
 		});
 };
-var _elm_lang$elm_architecture_tutorial$Metronomes$main = _elm_lang$html$Html$program(
-	{init: _elm_lang$elm_architecture_tutorial$Metronomes$init, view: _elm_lang$elm_architecture_tutorial$Metronomes$view, update: _elm_lang$elm_architecture_tutorial$Metronomes$update, subscriptions: _elm_lang$elm_architecture_tutorial$Metronomes$subscriptions})();
+var _elm_lang$elm_architecture_tutorial$Metronomes$main = _elm_lang$html$Html$programWithFlags(
+	{init: _elm_lang$elm_architecture_tutorial$Metronomes$init, view: _elm_lang$elm_architecture_tutorial$Metronomes$view, update: _elm_lang$elm_architecture_tutorial$Metronomes$update, subscriptions: _elm_lang$elm_architecture_tutorial$Metronomes$subscriptions})(_elm_lang$core$Json_Decode$value);
 
 var Elm = {};
 Elm['Metronomes'] = Elm['Metronomes'] || {};
