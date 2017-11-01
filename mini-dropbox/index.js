@@ -18696,6 +18696,8 @@ var _user$project$Main$locationToPage = function (location) {
 				return _user$project$Main$Main;
 			case 'settings':
 				return _user$project$Main$Settings;
+			case 'mini-dropbox':
+				return _user$project$Main$Login;
 			default:
 				return _user$project$Main$NotFound;
 		}
