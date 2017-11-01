@@ -18682,12 +18682,13 @@ var _user$project$Main$locationToPage = function (location) {
 	var suffix = _elm_lang$core$List$head(
 		_elm_lang$core$List$reverse(
 			A2(_elm_lang$core$String$split, '/', location.pathname)));
-	var _p1 = suffix;
-	if (_p1.ctor === 'Nothing') {
+	var _p1 = A2(_elm_lang$core$Debug$log, 'asda', location);
+	var _p2 = suffix;
+	if (_p2.ctor === 'Nothing') {
 		return _user$project$Main$Login;
 	} else {
-		var _p2 = _p1._0;
-		switch (_p2) {
+		var _p3 = _p2._0;
+		switch (_p3) {
 			case 'index.html':
 				return _user$project$Main$Login;
 			case 'main':
@@ -18704,9 +18705,9 @@ var _user$project$Main$locationToPage = function (location) {
 	}
 };
 var _user$project$Main$init = function (location) {
-	var _p3 = _rundis$elm_bootstrap$Bootstrap_Navbar$initialState(_user$project$Main$NavbarMsg);
-	var navbarState = _p3._0;
-	var navbarCmd = _p3._1;
+	var _p4 = _rundis$elm_bootstrap$Bootstrap_Navbar$initialState(_user$project$Main$NavbarMsg);
+	var navbarState = _p4._0;
+	var navbarCmd = _p4._1;
 	return A2(
 		_elm_lang$core$Platform_Cmd_ops['!'],
 		{
@@ -18725,15 +18726,15 @@ var _user$project$Main$init = function (location) {
 };
 var _user$project$Main$update = F2(
 	function (msg, model) {
-		var _p4 = msg;
-		switch (_p4.ctor) {
+		var _p5 = msg;
+		switch (_p5.ctor) {
 			case 'UrlChange':
 				return A2(
 					_elm_lang$core$Platform_Cmd_ops['!'],
 					_elm_lang$core$Native_Utils.update(
 						model,
 						{
-							page: _user$project$Main$locationToPage(_p4._0)
+							page: _user$project$Main$locationToPage(_p5._0)
 						}),
 					{ctor: '[]'});
 			case 'ModalMsg':
@@ -18741,41 +18742,41 @@ var _user$project$Main$update = F2(
 					_elm_lang$core$Platform_Cmd_ops['!'],
 					_elm_lang$core$Native_Utils.update(
 						model,
-						{modalState: _p4._0}),
+						{modalState: _p5._0}),
 					{ctor: '[]'});
 			case 'NavbarMsg':
 				return A2(
 					_elm_lang$core$Platform_Cmd_ops['!'],
 					_elm_lang$core$Native_Utils.update(
 						model,
-						{navbarState: _p4._0}),
+						{navbarState: _p5._0}),
 					{ctor: '[]'});
 			case 'DropdownMsg':
 				return A2(
 					_elm_lang$core$Platform_Cmd_ops['!'],
 					_elm_lang$core$Native_Utils.update(
 						model,
-						{dropdownState: _p4._0}),
+						{dropdownState: _p5._0}),
 					{ctor: '[]'});
 			case 'TabMsg':
 				return A2(
 					_elm_lang$core$Platform_Cmd_ops['!'],
 					_elm_lang$core$Native_Utils.update(
 						model,
-						{tabState: _p4._0}),
+						{tabState: _p5._0}),
 					{ctor: '[]'});
 			case 'FileDropdown':
 				var replace = F2(
 					function (id, list) {
-						var _p5 = list;
-						if (_p5.ctor === '[]') {
+						var _p6 = list;
+						if (_p6.ctor === '[]') {
 							return {ctor: '[]'};
 						} else {
-							var _p6 = _p5._1;
-							return (_elm_lang$core$Native_Utils.cmp(id, 0) < 1) ? {ctor: '::', _0: _p4._1, _1: _p6} : {
+							var _p7 = _p6._1;
+							return (_elm_lang$core$Native_Utils.cmp(id, 0) < 1) ? {ctor: '::', _0: _p5._1, _1: _p7} : {
 								ctor: '::',
-								_0: _p5._0,
-								_1: A2(replace, id - 1, _p6)
+								_0: _p6._0,
+								_1: A2(replace, id - 1, _p7)
 							};
 						}
 					});
@@ -18784,7 +18785,7 @@ var _user$project$Main$update = F2(
 					_elm_lang$core$Native_Utils.update(
 						model,
 						{
-							fileDropdowns: A2(replace, _p4._0, model.fileDropdowns)
+							fileDropdowns: A2(replace, _p5._0, model.fileDropdowns)
 						}),
 					{ctor: '[]'});
 			case 'GotoMain':
