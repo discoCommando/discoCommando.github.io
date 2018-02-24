@@ -8,7 +8,7 @@ echo "<!DOCTYPE html>
 	<h1>
 		Login
 	</h1>
-	<form method='POST' action='/index.php'>
+	<form method='GET' action='/index.php'>
 		<input type='text' name='username'>	
 		<input type='password' name='password'>
 		<input type='submit' name=''>
@@ -17,7 +17,7 @@ echo "<!DOCTYPE html>
 </body>
 </html>";
 
-if (isset($_POST["username"])) {
+if (isset($_GET["username"])) {
 	echo "POSTED";
 }
  ?>
